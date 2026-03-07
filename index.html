@@ -450,9 +450,14 @@ header {
       </div>
       <div style="display:flex; flex-direction:column; gap:16px;">
         <div class="card" style="flex:1">
-          <div class="card-title">Cost Per Lead <span class="source-badge source-mock">Mock</span></div>
-          <div style="font-family:'Fraunces',serif; font-size:42px; font-weight:300; color:var(--gold-light); line-height:1; margin-bottom:6px;">$14.76</div>
-          <div style="font-size:10px; color:var(--text-muted)">Target: <span style="color:var(--text-mid)">≤ $18.00</span></div>
+          <div class="card-title">Cost Per Lead <span class="source-badge source-live">Live</span></div>
+          <div style="font-family:'Fraunces',serif; font-size:42px; font-weight:300; color:var(--gold-light); line-height:1; margin-bottom:4px;" id="ov-cpl-card">—</div>
+          <div style="font-size:10px; color:var(--text-muted);" id="ov-cpl-card-sub">Awaiting Meta data</div>
+          <div style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">Cost / Booked Call</div>
+            <div style="font-family:'Fraunces',serif; font-size:28px; font-weight:300; color:var(--text-mid); line-height:1; margin-bottom:4px;" id="ov-cpbc-card">—</div>
+            <div style="font-size:10px; color:var(--text-muted);" id="ov-cpbc-card-sub">Spend ÷ calls booked</div>
+          </div>
         </div>
         <div class="card" style="flex:1">
           <div class="card-title">Open Pipeline <span class="source-badge source-live">Live</span></div>
@@ -464,7 +469,7 @@ header {
 
     <div class="grid-2">
       <div class="card">
-        <div class="card-title">Daily Ad Spend vs Leads <span class="source-badge source-mock">Mock data</span></div>
+        <div class="card-title">Daily Ad Spend vs Leads <span class="source-badge source-live">Live</span></div>
         <div class="chart-wrap" style="height:200px;">
           <canvas id="spendLeadsChart"></canvas>
         </div>
@@ -1510,8 +1515,12 @@ function updateCPBC(booked) {
   const cpbc = lastMetaSpend > 0 && lastBookedCalls > 0
     ? lastMetaSpend / lastBookedCalls
     : 0;
-  setText('ov-cpbc',     cpbc > 0 ? formatMoney(cpbc) : '—');
-  setText('ov-cpbc-sub', cpbc > 0 ? `${formatMoney(lastMetaSpend)} spend · ${lastBookedCalls} calls` : 'Awaiting both data sources');
+  const cpbcStr = cpbc > 0 ? formatMoney(cpbc) : '—';
+  const subStr  = cpbc > 0 ? `${formatMoney(lastMetaSpend)} spend · ${lastBookedCalls} calls` : 'Awaiting both data sources';
+  setText('ov-cpbc',         cpbcStr);
+  setText('ov-cpbc-sub',     subStr);
+  setText('ov-cpbc-card',    cpbcStr);
+  setText('ov-cpbc-card-sub', subStr);
 }
 function setText(id, val) {
   const el = document.getElementById(id);
@@ -1631,6 +1640,8 @@ function renderMetaData(d) {
   // Overview bar
   setText('ov-leads', summary.leads.toLocaleString());
   setText('ov-cpl',   `CPL: ${summary.cpl > 0 ? formatMoney(summary.cpl) : '—'}`);
+  setText('ov-cpl-card',     summary.cpl > 0 ? formatMoney(summary.cpl) : '—');
+  setText('ov-cpl-card-sub', summary.cpl > 0 ? `${summary.leads} leads · ${formatMoney(summary.spend)} spend` : 'Awaiting Meta data');
   lastMetaSpend = summary.spend || 0;
   updateCPBC();
 
@@ -1658,7 +1669,7 @@ function renderMetaData(d) {
     }
   }
 
-  // Daily spend chart
+  // Daily spend chart (Meta tab)
   if (charts.metaDaily) charts.metaDaily.destroy();
   const dCtx = document.getElementById('metaDailyChart');
   if (dCtx && daily) {
@@ -1670,6 +1681,32 @@ function renderMetaData(d) {
         datasets: [{ label: 'Spend ($)', data: sorted.map(([,v]) => v.spend || 0), backgroundColor: 'rgba(212,175,55,0.7)', borderRadius: 3 }]
       },
       options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#8892a4', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#8892a4', callback: v => '$'+v }, beginAtZero:true } } }
+    });
+  }
+
+  // Spend vs Leads chart (Overview tab) — live data
+  if (charts.spendLeads) charts.spendLeads.destroy();
+  const slCtx = document.getElementById('spendLeadsChart');
+  if (slCtx && daily) {
+    const sorted2 = Object.entries(daily).sort((a,b) => a[0].localeCompare(b[0]));
+    charts.spendLeads = new Chart(slCtx, {
+      type: 'bar',
+      data: {
+        labels: sorted2.map(([d]) => d.slice(5)),
+        datasets: [
+          { label: 'Spend ($)', data: sorted2.map(([,v]) => v.spend || 0), backgroundColor: 'rgba(196,160,60,0.25)', borderColor: 'rgba(196,160,60,0.7)', borderWidth:1, yAxisID:'y', order:2 },
+          { label: 'Leads', data: sorted2.map(([,v]) => v.leads || 0), type:'line', borderColor:'rgba(46,204,138,0.8)', backgroundColor:'rgba(46,204,138,0.05)', borderWidth:2, pointRadius:3, tension:0.4, yAxisID:'y2', fill:true, order:1 }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{
+          x:{ grid:{color:'rgba(255,255,255,0.03)'}, ticks:{maxRotation:0, maxTicksLimit:8, color:'#8892a4', font:{size:9}} },
+          y:{ grid:{color:'rgba(255,255,255,0.03)'}, position:'left', ticks:{callback:v=>'$'+v, color:'#8892a4'} },
+          y2:{ grid:{display:false}, position:'right', ticks:{color:'#8892a4'} }
+        }
+      }
     });
   }
 }
