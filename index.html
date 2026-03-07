@@ -418,6 +418,7 @@ header {
         <div class="kpi-label">Calls Booked <span class="source-badge source-live">Live</span></div>
         <div class="kpi-value" id="ov-booked">—</div>
         <div class="kpi-delta" id="ov-booked-delta">Loading...</div>
+        <div class="kpi-delta delta-neutral" id="ov-lead-to-booked" style="margin-top:2px;">—</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Show Rate <span class="source-badge source-live">Live</span></div>
@@ -428,6 +429,7 @@ header {
         <div class="kpi-label">Deals Won <span class="source-badge source-live">Live</span></div>
         <div class="kpi-value" id="ov-won">—</div>
         <div class="kpi-delta" id="ov-won-delta">Loading...</div>
+        <div class="kpi-delta delta-neutral" id="ov-rev-per-deal" style="margin-top:2px;">—</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Pipeline Value <span class="source-badge source-live">Live</span></div>
@@ -470,19 +472,31 @@ header {
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Recent Opportunities <span class="source-badge source-live">Live</span></div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Contact</th>
-              <th>Value</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="recentOppsTable">
-            <tr><td colspan="3" style="color:var(--text-muted); padding:20px 0;">Loading...</td></tr>
-          </tbody>
-        </table>
+        <div class="card-title">Webinar Funnel <span class="source-badge source-live">Live</span></div>
+        <div style="padding:8px 0;">
+          <div class="funnel-step">
+            <div class="funnel-label-row">
+              <span class="funnel-name">Registered</span>
+              <div class="funnel-nums"><span class="funnel-count" id="ov-wj-reg">—</span></div>
+            </div>
+            <div class="funnel-bar-bg"><div class="funnel-bar" id="ov-wj-reg-bar" style="width:100%"></div></div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-label-row">
+              <span class="funnel-name">Attended</span>
+              <div class="funnel-nums"><span class="funnel-count" id="ov-wj-att">—</span><span class="funnel-pct" id="ov-wj-showrate">—</span></div>
+            </div>
+            <div class="funnel-bar-bg"><div class="funnel-bar green-bar" id="ov-wj-att-bar" style="width:0%"></div></div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-label-row">
+              <span class="funnel-name">Booked Call</span>
+              <div class="funnel-nums"><span class="funnel-count" id="ov-wj-booked">—</span><span class="funnel-pct" id="ov-wj-booked-pct">—</span></div>
+            </div>
+            <div class="funnel-bar-bg"><div class="funnel-bar" id="ov-wj-booked-bar" style="width:0%; background:var(--gold);"></div></div>
+          </div>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); margin-top:8px;" id="ov-wj-session">Next session: —</div>
       </div>
     </div>
   </div>
@@ -527,7 +541,7 @@ header {
         <div class="card-title">Closer Leaderboard <span class="source-badge source-live">Live</span></div>
         <table class="data-table">
           <thead>
-            <tr><th>Closer</th><th>Calls</th><th>Showed</th><th>No-Show</th><th>Show Rate</th></tr>
+            <tr><th>Closer</th><th>Calls</th><th>Showed</th><th>No-Show</th><th>Show Rate</th><th>Won</th></tr>
           </thead>
           <tbody id="closerTableBody">
             <tr><td colspan="5" style="color:var(--text-muted);padding:16px 0;">Loading...</td></tr>
@@ -914,6 +928,23 @@ function renderWebinarData(d) {
   setText('wj-noshow',       stats.noShowed);
   setText('wj-showrate-val', `${stats.showRate}%`);
 
+  // Overview webinar funnel card
+  const reg     = stats.registrants || 0;
+  const att     = stats.attended    || 0;
+  const attPct  = reg > 0 ? Math.round(att / reg * 100) : 0;
+  const bookedFromWj = lastBookedCalls || 0;
+  const bookedPct    = reg > 0 ? Math.round(bookedFromWj / reg * 100) : 0;
+  setText('ov-wj-reg',         reg);
+  setText('ov-wj-att',         att);
+  setText('ov-wj-showrate',    `${attPct}%`);
+  setText('ov-wj-booked',      bookedFromWj);
+  setText('ov-wj-booked-pct',  `${bookedPct}%`);
+  setText('ov-wj-session',     `Next session: ${webinar.name || 'Private Money Masterclass'}`);
+  const attBar    = document.getElementById('ov-wj-att-bar');
+  const bookedBar = document.getElementById('ov-wj-booked-bar');
+  if (attBar)    attBar.style.width    = Math.max(attPct, 2) + '%';
+  if (bookedBar) bookedBar.style.width = Math.max(bookedPct, 2) + '%';
+
   // Daily registrations chart
   if (charts.wjDaily) charts.wjDaily.destroy();
   const dCtx = document.getElementById('wjDailyChart');
@@ -981,8 +1012,9 @@ function renderWhopData() {
 
   // Overview bar
   const totalSales = (revenue.countByTier['Tier 1']||0) + (revenue.countByTier['Tier 2']||0) + (revenue.countByTier['Tier 3']||0);
+  const refundRate = revenue.total > 0 ? Math.round((refunds.total / revenue.total) * 100) : 0;
   setText('ov-revenue',     formatMoney(revenue.total));
-  setText('ov-revenue-sub', `${totalSales} sales · ${formatMoney(refunds.total)} refunded`);
+  setText('ov-revenue-sub', `${totalSales} sales · ${refundRate}% refund rate`);
 
   // Tier KPIs
   ['Tier 1','Tier 2','Tier 3'].forEach((t, i) => {
@@ -1106,6 +1138,11 @@ function renderGHLData() {
   setText('ov-showrate-delta', `${completedCalls} completed calls`);
   setText('ov-won-delta', `${deals.lost} lost`);
   updateCPBC(appointments.booked || 0);
+  updateLeadToBooked();
+
+  // Rev per closed deal
+  const revPerDeal = deals.won > 0 && wonValue > 0 ? Math.round(wonValue / deals.won) : 0;
+  setText('ov-rev-per-deal', revPerDeal > 0 ? `avg ${formatMoney(revPerDeal)} / deal` : 'No closed deals yet');
 
   // Pipeline KPIs
   setText('pl-booked', appointments.booked || 0);
@@ -1130,7 +1167,7 @@ function renderGHLData() {
   renderStages(stageCounts, deals);
 
   // Closer leaderboard
-  renderCloserTable(rawAppointments || []);
+  renderCloserTable(rawAppointments || [], rawOpportunities || []);
 
   // Daily bookings chart
   renderDailyBookings(rawAppointments || []);
@@ -1174,16 +1211,24 @@ function renderFunnel(appointments, deals, completedCalls, showRate) {
   `).join('');
 }
 
-function renderCloserTable(appointments) {
+function renderCloserTable(appointments, opportunities) {
   const closers = {};
   appointments.forEach(a => {
     const id = a.assignedUserId;
     if (!id) return;
-    if (!closers[id]) closers[id] = { calls: 0, showed: 0, noshow: 0 };
+    if (!closers[id]) closers[id] = { calls: 0, showed: 0, noshow: 0, won: 0 };
     closers[id].calls++;
     const st = (a.appointmentStatus || '').toLowerCase();
     if (st === 'showed') closers[id].showed++;
     if (st === 'noshow' || st === 'no_show') closers[id].noshow++;
+  });
+
+  // Count won deals per closer from opportunities
+  (opportunities || []).forEach(o => {
+    const id = o.assignedTo || o.userId;
+    const stage = (o.pipelineStageId || '');
+    const isWon = stage === '654dc63e-e9a8-4417-8171-1bc1a6583f4f' || stage === '925a28d4-baaa-4d08-b576-dc439df33256';
+    if (id && isWon && closers[id]) closers[id].won++;
   });
 
   const rows = Object.entries(closers).map(([id, d]) => {
@@ -1197,11 +1242,12 @@ function renderCloserTable(appointments) {
       <td style="color:var(--green)">${d.showed}</td>
       <td style="color:var(--red)">${d.noshow}</td>
       <td style="color:${rateColor}; font-weight:500">${rate}%</td>
+      <td style="color:var(--gold); font-weight:500">${d.won}</td>
     </tr>`;
   });
 
   const tbody = document.getElementById('closerTableBody');
-  if (tbody) tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5" style="color:var(--text-muted)">No data</td></tr>';
+  if (tbody) tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6" style="color:var(--text-muted)">No data</td></tr>';
 }
 
 function renderDailyBookings(appointments) {
@@ -1504,9 +1550,17 @@ function initMockCharts() {
 
 // ── HELPERS ──
 let lastBookedCalls = 0;
+let lastMetaLeads   = 0;
+
+function updateLeadToBooked() {
+  const rate = lastMetaLeads > 0 && lastBookedCalls > 0
+    ? Math.round((lastBookedCalls / lastMetaLeads) * 100)
+    : 0;
+  setText('ov-lead-to-booked', rate > 0 ? `${rate}% lead → booked` : '—');
+}
 
 function updateCPBC(booked) {
-  if (booked !== undefined) lastBookedCalls = booked;
+  if (booked !== undefined) { lastBookedCalls = booked; updateLeadToBooked(); }
   const cpbc = lastMetaSpend > 0 && lastBookedCalls > 0
     ? lastMetaSpend / lastBookedCalls
     : 0;
@@ -1635,8 +1689,10 @@ function renderMetaData(d) {
   setText('ov-cpl',   `CPL: ${summary.cpl > 0 ? formatMoney(summary.cpl) : '—'}`);
   setText('ov-cpl-card',     summary.cpl > 0 ? formatMoney(summary.cpl) : '—');
   setText('ov-cpl-card-sub', summary.cpl > 0 ? `${summary.leads} leads · ${formatMoney(summary.spend)} spend` : 'Awaiting Meta data');
-  lastMetaSpend = summary.spend || 0;
+  lastMetaSpend  = summary.spend || 0;
+  lastMetaLeads  = summary.leads || 0;
   updateCPBC();
+  updateLeadToBooked();
 
   // Per-account cards — order matches account IDs
   if (accounts && accounts.length >= 1) {
