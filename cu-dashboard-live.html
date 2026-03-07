@@ -369,11 +369,16 @@ header {
       <div class="header-sub">Command Center &nbsp;·&nbsp; <span id="data-status">Loading live data...</span></div>
     </div>
     <div class="header-right">
-      <div class="date-range">
-        <button class="date-btn" onclick="setRange(this,'7d')">7D</button>
-        <button class="date-btn active" onclick="setRange(this,'30d')">30D</button>
-        <button class="date-btn" onclick="setRange(this,'90d')">90D</button>
-        <button class="date-btn" onclick="setRange(this,'mtd')">MTD</button>
+      <div class="date-range" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button class="date-btn" onclick="setPreset(this,'7d')">7D</button>
+        <button class="date-btn active" onclick="setPreset(this,'30d')">30D</button>
+        <button class="date-btn" onclick="setPreset(this,'90d')">90D</button>
+        <button class="date-btn" onclick="setPreset(this,'mtd')">MTD</button>
+        <div style="display:flex;align-items:center;gap:4px;margin-left:4px;">
+          <input type="date" id="dateFrom" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:11px;font-family:inherit;" onchange="applyCustomRange()">
+          <span style="color:var(--text-muted);font-size:11px;">to</span>
+          <input type="date" id="dateTo" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 6px;font-size:11px;font-family:inherit;" onchange="applyCustomRange()">
+        </div>
       </div>
       <div class="refresh-row">
         <div class="status-dot" id="statusDot"></div>
@@ -502,6 +507,43 @@ header {
         <div class="kpi-value" id="pl-pipeline">—</div>
         <div class="kpi-delta" id="pl-open-count">Loading...</div>
       </div>
+      <div class="kpi">
+        <div class="kpi-label">Contract Sent <span class="source-badge source-live">Live</span></div>
+        <div class="kpi-value" id="pl-contract">—</div>
+        <div class="kpi-delta delta-neutral">Tagged in GHL</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Closer Leaderboard <span class="source-badge source-live">Live</span></div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Closer</th><th>Calls</th><th>Showed</th><th>No-Show</th><th>Show Rate</th></tr>
+          </thead>
+          <tbody id="closerTableBody">
+            <tr><td colspan="5" style="color:var(--text-muted);padding:16px 0;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">Daily Bookings (Last 14 Days) <span class="source-badge source-live">Live</span></div>
+        <div class="chart-wrap" style="height:200px;">
+          <canvas id="dailyBookingsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Upcoming Appointments <span class="source-badge source-live">Live · Next 14 Days</span></div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Contact</th><th>Date</th><th>Time</th><th>Closer</th><th>Status</th></tr>
+        </thead>
+        <tbody id="upcomingTable">
+          <tr><td colspan="5" style="color:var(--text-muted);padding:16px 0;">Loading...</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="grid-1-2">
@@ -615,7 +657,10 @@ async function fetchGHL() {
   document.getElementById('data-status').textContent = 'Fetching live data...';
 
   try {
-    const res = await fetch(`${WORKER_URL}/ghl/summary`);
+    const params = new URLSearchParams();
+    if (activeRange.startTime) params.set('startTime', activeRange.startTime);
+    if (activeRange.endTime)   params.set('endTime',   activeRange.endTime);
+    const res = await fetch(`${WORKER_URL}/ghl/summary?${params.toString()}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     ghlData = await res.json();
 
@@ -714,6 +759,9 @@ function renderGHLData() {
 
   // Daily bookings chart
   renderDailyBookings(rawAppointments || []);
+
+  // Upcoming appointments
+  renderUpcomingTable(ghlData.upcoming || []);
 
   // Recent opps table
   renderOppsTable(rawOpportunities);
@@ -1105,17 +1153,82 @@ function switchTab(el, panel) {
   setTimeout(() => Object.values(charts).forEach(c => c?.resize?.()), 50);
 }
 
-function setRange(el) {
-  document.querySelectorAll('.date-btn').forEach(b=>b.classList.remove('active'));
+}
+
+// ── DATE RANGE STATE ──
+let activeRange = { startTime: null, endTime: null };
+
+function setPreset(el, preset) {
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+
+  const now = new Date();
+  let start;
+  if (preset === '7d')  start = new Date(now - 7  * 86400000);
+  if (preset === '30d') start = new Date(now - 30 * 86400000);
+  if (preset === '90d') start = new Date(now - 90 * 86400000);
+  if (preset === 'mtd') start = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  activeRange = { startTime: start.getTime(), endTime: now.getTime() };
+
+  // Clear custom date inputs
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+
+  fetchGHL();
+}
+
+function applyCustomRange() {
+  const from = document.getElementById('dateFrom').value;
+  const to   = document.getElementById('dateTo').value;
+  if (!from || !to) return;
+
+  // Deactivate preset buttons
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+
+  activeRange = {
+    startTime: new Date(from).getTime(),
+    endTime:   new Date(to + 'T23:59:59').getTime(),
+  };
+
+  fetchGHL();
 }
 
 function loadAllData() {
   fetchGHL();
 }
 
+// ── RENDER UPCOMING APPOINTMENTS ──
+function renderUpcomingTable(upcoming) {
+  const tbody = document.getElementById('upcomingTable');
+  if (!tbody) return;
+  if (!upcoming || upcoming.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);padding:16px 0;">No upcoming appointments found</td></tr>';
+    return;
+  }
+
+  const statusColor = { confirmed: 'var(--gold)', showed: 'var(--green)', noshow: 'var(--red)' };
+
+  tbody.innerHTML = upcoming.map(a => {
+    const dt = new Date(a.startTime);
+    const date = dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const time = dt.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+    const st   = (a.status || 'confirmed').toLowerCase();
+    const color = statusColor[st] || 'var(--text-muted)';
+    return `<tr>
+      <td style="font-weight:500;">${a.contact}</td>
+      <td>${date}</td>
+      <td>${time}</td>
+      <td>${a.closer}</td>
+      <td><span style="color:${color};text-transform:capitalize;">${st}</span></td>
+    </tr>`;
+  }).join('');
+}
+
 // ── INIT ──
 initMockCharts();
+// Default to 30D on load
+activeRange = { startTime: new Date(Date.now() - 30 * 86400000).getTime(), endTime: Date.now() };
 fetchGHL();
 
 // Auto-refresh every 15 min
