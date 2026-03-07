@@ -1468,8 +1468,6 @@ function switchTab(el, panel) {
   setTimeout(() => Object.values(charts).forEach(c => c?.resize?.()), 50);
 }
 
-}
-
 // ── DATE RANGE STATE ──
 let activeRange = { startTime: null, endTime: null };
 
