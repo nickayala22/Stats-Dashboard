@@ -19,8 +19,8 @@
   --text: #dde4f0;
   --text-muted: #5a6e8a;
   --text-mid: #8fa4c0;
-  --green: #2ecc8a;
-  --green-dim: rgba(46, 204, 138, 0.1);
+  --green: #00e887;
+  --green-dim: rgba(0, 232, 135, 0.1);
   --red: #e05555;
   --red-dim: rgba(224, 85, 85, 0.1);
   --amber: #e8a030;
@@ -141,8 +141,8 @@ header {
 .status-dot.error { background: var(--red); animation: none; }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(46,204,138,0.5); }
-  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(46,204,138,0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,232,135,0.5); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(0,232,135,0); }
 }
 
 .refresh-btn {
@@ -162,7 +162,7 @@ header {
   font-size: 8px; letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.source-live { background: rgba(46,204,138,0.12); color: var(--green); border: 1px solid rgba(46,204,138,0.3); }
+.source-live { background: rgba(0,232,135,0.12); color: var(--green); border: 1px solid rgba(0,232,135,0.3); }
 .source-mock { background: rgba(90,110,138,0.2); color: var(--text-muted); border: 1px solid rgba(90,110,138,0.3); }
 
 .tab-nav {
@@ -434,11 +434,6 @@ header {
         <div class="kpi-value gold" id="ov-pipeline">—</div>
         <div class="kpi-delta delta-neutral">Open opportunities</div>
       </div>
-      <div class="kpi">
-        <div class="kpi-label">Cost / Booked Call <span class="source-badge source-live">Live</span></div>
-        <div class="kpi-value" id="ov-cpbc">—</div>
-        <div class="kpi-delta delta-neutral" id="ov-cpbc-sub">Spend ÷ calls booked</div>
-      </div>
     </div>
 
     <div class="grid-3-1">
@@ -453,11 +448,11 @@ header {
           <div class="card-title">Cost Per Lead <span class="source-badge source-live">Live</span></div>
           <div style="font-family:'Fraunces',serif; font-size:42px; font-weight:300; color:var(--gold-light); line-height:1; margin-bottom:4px;" id="ov-cpl-card">—</div>
           <div style="font-size:10px; color:var(--text-muted);" id="ov-cpl-card-sub">Awaiting Meta data</div>
-          <div style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06);">
-            <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">Cost / Booked Call</div>
-            <div style="font-family:'Fraunces',serif; font-size:28px; font-weight:300; color:var(--text-mid); line-height:1; margin-bottom:4px;" id="ov-cpbc-card">—</div>
-            <div style="font-size:10px; color:var(--text-muted);" id="ov-cpbc-card-sub">Spend ÷ calls booked</div>
-          </div>
+        </div>
+        <div class="card" style="flex:1">
+          <div class="card-title">Cost / Booked Call <span class="source-badge source-live">Live</span></div>
+          <div style="font-family:'Fraunces',serif; font-size:36px; font-weight:300; color:var(--text-mid); line-height:1; margin-bottom:4px;" id="ov-cpbc-card">—</div>
+          <div style="font-size:10px; color:var(--text-muted);" id="ov-cpbc-card-sub">Spend ÷ calls booked</div>
         </div>
         <div class="card" style="flex:1">
           <div class="card-title">Open Pipeline <span class="source-badge source-live">Live</span></div>
@@ -942,7 +937,7 @@ function renderWebinarData(d) {
       type: 'doughnut',
       data: {
         labels: ['Attended', 'No-Show'],
-        datasets: [{ data: [stats.attended, stats.noShowed], backgroundColor: ['#4caf82','#e05252'], borderWidth: 0 }]
+        datasets: [{ data: [stats.attended, stats.noShowed], backgroundColor: ['#00e887','#e05252'], borderWidth: 0 }]
       },
       options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
     });
@@ -1033,7 +1028,7 @@ function renderWhopData() {
       type: 'doughnut',
       data: {
         labels: ['Active', 'Cancelled', 'Expired'],
-        datasets: [{ data: [members.active, members.cancelled, members.expired], backgroundColor: ['#4caf82','#e05252','#8892a4'], borderWidth:0 }]
+        datasets: [{ data: [members.active, members.cancelled, members.expired], backgroundColor: ['#00e887','#e05252','#8892a4'], borderWidth:0 }]
       },
       options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
     });
@@ -1462,7 +1457,7 @@ function initMockCharts() {
         labels: days30,
         datasets: [
           { label: 'Spend ($)', data: spendData, backgroundColor: 'rgba(196,160,60,0.25)', borderColor: 'rgba(196,160,60,0.7)', borderWidth:1, yAxisID:'y', order:2 },
-          { label: 'Leads', data: leadsData, type:'line', borderColor:'rgba(46,204,138,0.8)', backgroundColor:'rgba(46,204,138,0.05)', borderWidth:2, pointRadius:0, tension:0.4, yAxisID:'y2', fill:true, order:1 }
+          { label: 'Leads', data: leadsData, type:'line', borderColor:'rgba(0,232,135,0.9)', backgroundColor:'rgba(0,232,135,0.05)', borderWidth:2, pointRadius:0, tension:0.4, yAxisID:'y2', fill:true, order:1 }
         ]
       },
       options: {
@@ -1517,9 +1512,7 @@ function updateCPBC(booked) {
     : 0;
   const cpbcStr = cpbc > 0 ? formatMoney(cpbc) : '—';
   const subStr  = cpbc > 0 ? `${formatMoney(lastMetaSpend)} spend · ${lastBookedCalls} calls` : 'Awaiting both data sources';
-  setText('ov-cpbc',         cpbcStr);
-  setText('ov-cpbc-sub',     subStr);
-  setText('ov-cpbc-card',    cpbcStr);
+  setText('ov-cpbc-card',     cpbcStr);
   setText('ov-cpbc-card-sub', subStr);
 }
 function setText(id, val) {
@@ -1695,7 +1688,7 @@ function renderMetaData(d) {
         labels: sorted2.map(([d]) => d.slice(5)),
         datasets: [
           { label: 'Spend ($)', data: sorted2.map(([,v]) => v.spend || 0), backgroundColor: 'rgba(196,160,60,0.25)', borderColor: 'rgba(196,160,60,0.7)', borderWidth:1, yAxisID:'y', order:2 },
-          { label: 'Leads', data: sorted2.map(([,v]) => v.leads || 0), type:'line', borderColor:'rgba(46,204,138,0.8)', backgroundColor:'rgba(46,204,138,0.05)', borderWidth:2, pointRadius:3, tension:0.4, yAxisID:'y2', fill:true, order:1 }
+          { label: 'Leads', data: sorted2.map(([,v]) => v.leads || 0), type:'line', borderColor:'rgba(0,232,135,0.9)', backgroundColor:'rgba(0,232,135,0.05)', borderWidth:2, pointRadius:3, tension:0.4, yAxisID:'y2', fill:true, order:1 }
         ]
       },
       options: {
