@@ -770,7 +770,10 @@ async function fetchGHL() {
     const params = new URLSearchParams();
     if (activeRange.startTime) params.set('startTime', activeRange.startTime);
     if (activeRange.endTime)   params.set('endTime',   activeRange.endTime);
-    const res = await fetch(`${WORKER_URL}/ghl/summary?${params.toString()}`);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(`${WORKER_URL}/ghl/summary?${params.toString()}`, { signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     ghlData = await res.json();
 
@@ -808,27 +811,33 @@ function hideError() {
 // ── FETCH WHOP ──
 async function fetchWhop() {
   try {
-    const res = await fetch(`${WORKER_URL}/whop/summary`);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res  = await fetch(`${WORKER_URL}/whop/summary`, { signal: controller.signal });
+    clearTimeout(timeout);
     const data = await res.json();
     if (!res.ok) {
       console.error('Whop error:', data);
-      document.getElementById('wh-total-rev').textContent = 'Error';
-      document.getElementById('wh-total-count').textContent = data.error || 'Check worker logs';
+      setText('wh-total-rev', 'Error');
+      setText('wh-total-count', data.error || 'Check worker logs');
       return;
     }
     whopData = data;
     renderWhopData();
   } catch (err) {
     console.warn('Whop fetch failed:', err.message);
-    document.getElementById('wh-total-rev').textContent = 'Error';
-    document.getElementById('wh-total-count').textContent = err.message;
+    setText('wh-total-rev', err.name === 'AbortError' ? 'Timeout' : 'Error');
+    setText('wh-total-count', err.name === 'AbortError' ? 'Deploy worker' : err.message);
   }
 }
 
 // ── FETCH WEBINARJAM ──
 async function fetchWebinar() {
   try {
-    const res  = await fetch(`${WORKER_URL}/webinar/summary?webinar_id=53`);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res  = await fetch(`${WORKER_URL}/webinar/summary?webinar_id=53`, { signal: controller.signal });
+    clearTimeout(timeout);
     const data = await res.json();
     if (!res.ok) {
       console.error('WebinarJam error:', data);
@@ -839,8 +848,8 @@ async function fetchWebinar() {
     renderWebinarData(data);
   } catch(err) {
     console.warn('WebinarJam fetch failed:', err.message);
-    setText('wj-registrants', 'Error');
-    setText('wj-webinar-name', err.message);
+    setText('wj-registrants', err.name === 'AbortError' ? 'Timeout' : 'Error');
+    setText('wj-webinar-name', err.name === 'AbortError' ? 'Deploy worker' : err.message);
   }
 }
 
