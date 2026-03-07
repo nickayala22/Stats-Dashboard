@@ -601,40 +601,104 @@ header {
 
   <!-- ═══ REVENUE ═══ -->
   <div class="panel" id="panel-revenue">
+
     <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
       <div class="kpi">
-        <div class="kpi-label">Won Revenue <span class="source-badge source-live">Live</span></div>
-        <div class="kpi-value gold" id="rv-won">—</div>
-        <div class="kpi-delta delta-neutral">Closed opportunities</div>
+        <div class="kpi-label">Total Revenue <span class="source-badge source-live">Whop Live</span></div>
+        <div class="kpi-value gold" id="wh-total-rev">—</div>
+        <div class="kpi-delta delta-neutral" id="wh-total-count">Loading...</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Open Pipeline <span class="source-badge source-live">Live</span></div>
-        <div class="kpi-value" id="rv-pipeline">—</div>
-        <div class="kpi-delta delta-neutral">Active deals</div>
+        <div class="kpi-label">Active Members <span class="source-badge source-live">Whop Live</span></div>
+        <div class="kpi-value green" id="wh-active">—</div>
+        <div class="kpi-delta delta-neutral" id="wh-active-sub">Loading...</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Deals Won <span class="source-badge source-live">Live</span></div>
-        <div class="kpi-value green" id="rv-deals-won">—</div>
-        <div class="kpi-delta delta-neutral">Total closed</div>
+        <div class="kpi-label">Refunds <span class="source-badge source-live">Whop Live</span></div>
+        <div class="kpi-value red" id="wh-refunds">—</div>
+        <div class="kpi-delta delta-neutral" id="wh-refund-count">Loading...</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Deals Lost <span class="source-badge source-live">Live</span></div>
-        <div class="kpi-value red" id="rv-deals-lost">—</div>
-        <div class="kpi-delta delta-neutral">Total lost</div>
+        <div class="kpi-label">Disputes <span class="source-badge source-live">Whop Live</span></div>
+        <div class="kpi-value red" id="wh-disputes">—</div>
+        <div class="kpi-delta delta-neutral">Open chargebacks</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-top:0;">
+      <div class="kpi" style="border-top:2px solid var(--gold-dim);">
+        <div class="kpi-label">Tier 1 Revenue <span style="color:var(--text-muted);font-size:9px;">≤$5K</span></div>
+        <div class="kpi-value" id="wh-t1-rev">—</div>
+        <div class="kpi-delta delta-neutral" id="wh-t1-count">— sales</div>
+      </div>
+      <div class="kpi" style="border-top:2px solid var(--gold);">
+        <div class="kpi-label">Tier 2 Revenue <span style="color:var(--text-muted);font-size:9px;">$5K–$12.4K</span></div>
+        <div class="kpi-value gold" id="wh-t2-rev">—</div>
+        <div class="kpi-delta delta-neutral" id="wh-t2-count">— sales</div>
+      </div>
+      <div class="kpi" style="border-top:2px solid #c8a04a;">
+        <div class="kpi-label">Tier 3 Revenue <span style="color:var(--text-muted);font-size:9px;">$12.5K+</span></div>
+        <div class="kpi-value" style="color:#c8a04a;" id="wh-t3-rev">—</div>
+        <div class="kpi-delta delta-neutral" id="wh-t3-count">— sales</div>
       </div>
     </div>
 
     <div class="grid-2">
       <div class="card">
-        <div class="card-title">Won vs Lost vs Open <span class="source-badge source-live">Live</span></div>
-        <div class="chart-wrap" style="height:240px;">
+        <div class="card-title">Daily Sales (Last 30 Days) <span class="source-badge source-live">Whop Live</span></div>
+        <div class="chart-wrap" style="height:220px;">
+          <canvas id="whopDailySalesChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Revenue by Tier <span class="source-badge source-live">Whop Live</span></div>
+        <div class="chart-wrap" style="height:220px;">
+          <canvas id="whopTierChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Member Status <span class="source-badge source-live">Whop Live</span></div>
+        <div class="chart-wrap" style="height:200px;">
+          <canvas id="whopMemberChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Active Members by Tier <span class="source-badge source-live">Whop Live</span></div>
+        <div class="chart-wrap" style="height:200px;">
+          <canvas id="whopActiveTierChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Recent Payments <span class="source-badge source-live">Whop Live</span></div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Buyer</th><th>Amount</th><th>Tier</th><th>Status</th><th>Date</th></tr>
+        </thead>
+        <tbody id="whopPaymentsTable">
+          <tr><td colspan="5" style="color:var(--text-muted);padding:16px 0;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title">Won vs Lost vs Open <span class="source-badge source-live">GHL Live</span></div>
+        <div class="chart-wrap" style="height:220px;">
           <canvas id="dealStatusChart"></canvas>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Revenue Trend <span class="source-badge source-mock">Mock — Stripe coming</span></div>
-        <div class="chart-wrap" style="height:240px;">
-          <canvas id="revTrendChart"></canvas>
+        <div class="card-title">GHL Pipeline Value <span class="source-badge source-live">GHL Live</span></div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr); padding:16px 0 0;">
+          <div class="kpi"><div class="kpi-label">Won</div><div class="kpi-value gold" id="rv-won">—</div></div>
+          <div class="kpi"><div class="kpi-label">Open</div><div class="kpi-value" id="rv-pipeline">—</div></div>
+          <div class="kpi"><div class="kpi-label">Deals Won</div><div class="kpi-value green" id="rv-deals-won">—</div></div>
+          <div class="kpi"><div class="kpi-label">Deals Lost</div><div class="kpi-value red" id="rv-deals-lost">—</div></div>
         </div>
       </div>
     </div>
@@ -648,8 +712,9 @@ header {
 const WORKER_URL = 'https://restless-wildflower-1f9falign-proxy.nick-0f0.workers.dev';
 
 // ── STATE ──
-let ghlData = null;
-let charts = {};
+let ghlData  = null;
+let whopData = null;
+let charts   = {};
 
 // ── FETCH GHL ──
 async function fetchGHL() {
@@ -693,6 +758,118 @@ function showError(msg) {
 
 function hideError() {
   document.getElementById('errorBanner').style.display = 'none';
+}
+
+// ── FETCH WHOP ──
+async function fetchWhop() {
+  try {
+    const res = await fetch(`${WORKER_URL}/whop/summary`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    whopData = await res.json();
+    renderWhopData();
+  } catch (err) {
+    console.warn('Whop fetch failed:', err.message);
+    // Don't block the whole dashboard, just show dashes
+  }
+}
+
+// ── RENDER WHOP DATA ──
+function renderWhopData() {
+  if (!whopData) return;
+  const { revenue, refunds, disputes, members, dailySales, recentPayments } = whopData;
+
+  // KPIs
+  setText('wh-total-rev',   formatMoney(revenue.total));
+  setText('wh-total-count', `${(revenue.countByTier['Tier 1']||0) + (revenue.countByTier['Tier 2']||0) + (revenue.countByTier['Tier 3']||0)} total sales`);
+  setText('wh-active',      members.active);
+  setText('wh-active-sub',  `${members.cancelled} cancelled · ${members.expired} expired`);
+  setText('wh-refunds',     formatMoney(refunds.total));
+  setText('wh-refund-count',`${refunds.count} refunds`);
+  setText('wh-disputes',    disputes.count);
+
+  // Tier KPIs
+  ['Tier 1','Tier 2','Tier 3'].forEach((t, i) => {
+    const key = `t${i+1}`;
+    setText(`wh-${key}-rev`,   formatMoney(revenue.byTier[t]   || 0));
+    setText(`wh-${key}-count`, `${revenue.countByTier[t] || 0} sales`);
+  });
+
+  // Daily sales chart
+  if (charts.whopDaily) charts.whopDaily.destroy();
+  const dailyCtx = document.getElementById('whopDailySalesChart');
+  if (dailyCtx) {
+    const sorted = Object.entries(dailySales).sort((a,b) => a[0].localeCompare(b[0]));
+    charts.whopDaily = new Chart(dailyCtx, {
+      type: 'bar',
+      data: {
+        labels: sorted.map(([d]) => d.slice(5)),
+        datasets: [{ label: 'Sales', data: sorted.map(([,v]) => v), backgroundColor: 'rgba(212,175,55,0.7)', borderRadius: 3 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#8892a4', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#8892a4' }, beginAtZero:true, precision:0 } } }
+    });
+  }
+
+  // Revenue by tier donut
+  if (charts.whopTier) charts.whopTier.destroy();
+  const tierCtx = document.getElementById('whopTierChart');
+  if (tierCtx) {
+    charts.whopTier = new Chart(tierCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Tier 1', 'Tier 2', 'Tier 3'],
+        datasets: [{ data: [revenue.byTier['Tier 1']||0, revenue.byTier['Tier 2']||0, revenue.byTier['Tier 3']||0], backgroundColor: ['#4a7fa5','#d4af37','#c8a04a'], borderWidth:0 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
+    });
+  }
+
+  // Member status donut
+  if (charts.whopMembers) charts.whopMembers.destroy();
+  const memCtx = document.getElementById('whopMemberChart');
+  if (memCtx) {
+    charts.whopMembers = new Chart(memCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Active', 'Cancelled', 'Expired'],
+        datasets: [{ data: [members.active, members.cancelled, members.expired], backgroundColor: ['#4caf82','#e05252','#8892a4'], borderWidth:0 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
+    });
+  }
+
+  // Active by tier donut
+  if (charts.whopActiveTier) charts.whopActiveTier.destroy();
+  const atCtx = document.getElementById('whopActiveTierChart');
+  if (atCtx) {
+    charts.whopActiveTier = new Chart(atCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Tier 1', 'Tier 2', 'Tier 3'],
+        datasets: [{ data: [members.byTier['Tier 1']||0, members.byTier['Tier 2']||0, members.byTier['Tier 3']||0], backgroundColor: ['#4a7fa5','#d4af37','#c8a04a'], borderWidth:0 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
+    });
+  }
+
+  // Recent payments table
+  const tbody = document.getElementById('whopPaymentsTable');
+  if (tbody) {
+    if (!recentPayments || recentPayments.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);padding:16px 0;">No payments found</td></tr>';
+    } else {
+      tbody.innerHTML = recentPayments.map(p => {
+        const date = p.created_at ? new Date(p.created_at * 1000).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+        const tierColor = p.tier === 'Tier 3' ? '#c8a04a' : p.tier === 'Tier 2' ? 'var(--gold)' : 'var(--text-mid)';
+        return `<tr>
+          <td style="font-weight:500;">${p.buyer}</td>
+          <td style="color:var(--gold);">${formatMoney(p.amount)}</td>
+          <td><span style="color:${tierColor};font-size:11px;">${p.tier}</span></td>
+          <td><span style="color:var(--green);font-size:11px;">${p.status}</span></td>
+          <td style="color:var(--text-muted);">${date}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
 }
 
 // Closer name map
@@ -1196,6 +1373,7 @@ function applyCustomRange() {
 
 function loadAllData() {
   fetchGHL();
+  fetchWhop();
 }
 
 // ── RENDER UPCOMING APPOINTMENTS ──
@@ -1230,6 +1408,7 @@ initMockCharts();
 // Default to 30D on load
 activeRange = { startTime: new Date(Date.now() - 30 * 86400000).getTime(), endTime: Date.now() };
 fetchGHL();
+fetchWhop();
 
 // Auto-refresh every 15 min
 setInterval(loadAllData, 15 * 60 * 1000);
