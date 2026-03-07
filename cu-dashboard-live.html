@@ -650,19 +650,31 @@ function hideError() {
   document.getElementById('errorBanner').style.display = 'none';
 }
 
+// Closer name map
+const CLOSER_NAMES = {
+  'VWvue5YByZHIKFYo5YEh': 'Michael M.',
+  'OYLVyczHMHC9fGEZPmqs': 'Phillip H.',
+};
+
 // ── RENDER LIVE GHL DATA ──
 function renderGHLData() {
   if (!ghlData) return;
 
-  const { appointments, deals, pipelineValue, wonValue, rawOpportunities, stageCounts } = ghlData;
+  const { appointments, deals, pipelineValue, wonValue, rawOpportunities, stageCounts, rawAppointments } = ghlData;
 
-  const showRate = appointments.booked > 0
-    ? Math.round((appointments.showed / appointments.booked) * 100)
+  // Fix show rate: only count completed calls (showed + noshow), exclude confirmed/upcoming
+  const completedCalls = (appointments.showed || 0) + (appointments.noShow || 0);
+  const showRate = completedCalls > 0
+    ? Math.round((appointments.showed / completedCalls) * 100)
+    : 0;
+  const noShowRate = completedCalls > 0
+    ? Math.round((appointments.noShow / completedCalls) * 100)
     : 0;
 
-  const noShowRate = appointments.booked > 0
-    ? Math.round((appointments.noShow / appointments.booked) * 100)
-    : 0;
+  // Contract sent count from tags
+  const contractSent = (rawOpportunities || []).filter(o =>
+    (o.contact?.tags || o.tags || []).includes('contract sent')
+  ).length;
 
   // Overview KPIs
   setText('ov-booked', appointments.booked || 0);
@@ -672,18 +684,17 @@ function renderGHLData() {
   setText('ov-pipeline-card', formatMoney(pipelineValue));
   setText('ov-open-count', `${deals.open} open deals`);
   setText('ov-booked-delta', `${appointments.noShow} no-shows`);
-  setText('ov-showrate-delta', `${appointments.noShow} no-showed`);
+  setText('ov-showrate-delta', `${completedCalls} completed calls`);
   setText('ov-won-delta', `${deals.lost} lost`);
 
   // Pipeline KPIs
   setText('pl-booked', appointments.booked || 0);
   setText('pl-showed', appointments.showed || 0);
   setText('pl-noshow', appointments.noShow || 0);
-  setText('pl-won', deals.won || 0);
+  setText('pl-contract', contractSent);
   setText('pl-pipeline', formatMoney(pipelineValue));
   setText('pl-showrate-delta', `${showRate}% show rate`);
   setText('pl-noshowrate', `${noShowRate}% no-show rate`);
-  setText('pl-won-val', formatMoney(wonValue) + ' closed');
   setText('pl-open-count', `${deals.open} open deals`);
 
   // Revenue KPIs
@@ -693,10 +704,16 @@ function renderGHLData() {
   setText('rv-deals-lost', deals.lost || 0);
 
   // Funnel
-  renderFunnel(appointments, deals);
+  renderFunnel(appointments, deals, completedCalls, showRate);
 
-  // Pipeline stages
+  // Pipeline stages — real breakdown
   renderStages(stageCounts, deals);
+
+  // Closer leaderboard
+  renderCloserTable(rawAppointments || []);
+
+  // Daily bookings chart
+  renderDailyBookings(rawAppointments || []);
 
   // Recent opps table
   renderOppsTable(rawOpportunities);
@@ -706,7 +723,7 @@ function renderGHLData() {
   renderDealStatusChart(deals, wonValue, pipelineValue);
 }
 
-function renderFunnel(appointments, deals) {
+function renderFunnel(appointments, deals, completedCalls, showRate) {
   const booked = appointments.booked || 0;
   const showed = appointments.showed || 0;
   const won = deals.won || 0;
@@ -714,11 +731,13 @@ function renderFunnel(appointments, deals) {
 
   const steps = [
     { label: 'Calls Booked', count: booked, pct: 100, bar: 100, color: '' },
-    { label: 'Showed Up', count: showed, pct: Math.round(showed/base*100), bar: Math.round(showed/base*100), color: '' },
+    { label: 'Showed (of completed)', count: showed, pct: showRate || Math.round(showed/base*100), bar: showRate || Math.round(showed/base*100), color: '' },
     { label: 'Deals Won', count: won, pct: booked > 0 ? Math.round(won/base*100) : 0, bar: booked > 0 ? Math.round(won/base*100) : 0, color: 'green-bar' },
   ];
 
-  document.getElementById('overviewFunnel').innerHTML = steps.map(s => `
+  const el = document.getElementById('overviewFunnel');
+  if (!el) return;
+  el.innerHTML = steps.map(s => `
     <div class="funnel-step">
       <div class="funnel-label-row">
         <span class="funnel-name">${s.label}</span>
@@ -732,21 +751,104 @@ function renderFunnel(appointments, deals) {
   `).join('');
 }
 
+function renderCloserTable(appointments) {
+  const closers = {};
+  appointments.forEach(a => {
+    const id = a.assignedUserId;
+    if (!id) return;
+    if (!closers[id]) closers[id] = { calls: 0, showed: 0, noshow: 0 };
+    closers[id].calls++;
+    const st = (a.appointmentStatus || '').toLowerCase();
+    if (st === 'showed') closers[id].showed++;
+    if (st === 'noshow' || st === 'no_show') closers[id].noshow++;
+  });
+
+  const rows = Object.entries(closers).map(([id, d]) => {
+    const completed = d.showed + d.noshow;
+    const rate = completed > 0 ? Math.round(d.showed / completed * 100) : 0;
+    const name = CLOSER_NAMES[id] || id.substring(0,8) + '...';
+    const rateColor = rate >= 70 ? 'var(--green)' : rate >= 50 ? 'var(--amber)' : 'var(--red)';
+    return `<tr>
+      <td style="color:var(--text)">${name}</td>
+      <td>${d.calls}</td>
+      <td style="color:var(--green)">${d.showed}</td>
+      <td style="color:var(--red)">${d.noshow}</td>
+      <td style="color:${rateColor}; font-weight:500">${rate}%</td>
+    </tr>`;
+  });
+
+  const tbody = document.getElementById('closerTableBody');
+  if (tbody) tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5" style="color:var(--text-muted)">No data</td></tr>';
+}
+
+function renderDailyBookings(appointments) {
+  // Build last 14 days
+  const days = [];
+  const counts = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    days.push(d.toLocaleDateString('en-US', { month:'short', day:'numeric' }));
+    const count = appointments.filter(a => {
+      const s = a.startTime || a.dateAdded || '';
+      return s.startsWith(key);
+    }).length;
+    counts.push(count);
+  }
+
+  if (charts.dailyBookings) charts.dailyBookings.destroy();
+  const ctx = document.getElementById('dailyBookingsChart');
+  if (!ctx) return;
+  charts.dailyBookings = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: days,
+      datasets: [{
+        data: counts,
+        backgroundColor: counts.map(c => c > 5 ? 'rgba(196,160,60,0.8)' : 'rgba(196,160,60,0.35)'),
+        borderRadius: 4, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 0 } },
+        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { stepSize: 1 }, beginAtZero: true }
+      }
+    }
+  });
+}
+
 function renderStages(stageCounts, deals) {
-  const stageColors = ['#4a9eff','#c4a03c','#e8a030','#b06cd4','#2ecc8a','#e2bc52','#e05555'];
-  const stageEntries = Object.entries(stageCounts);
-  const maxCount = Math.max(...stageEntries.map(([,v])=>v), 1);
+  const stageColors = {
+    'Appt Booked': '#4a9eff',
+    'Follow Up': '#c4a03c',
+    'No Show': '#e05555',
+    'Joined Tier 1 (Closed)': '#2ecc8a',
+    'Joined Tier 2 (Closed)': '#22b87a',
+    'Disqualified': '#5a6e8a',
+    'Lost': '#e05555',
+  };
+  const defaultColors = ['#4a9eff','#c4a03c','#e8a030','#b06cd4','#2ecc8a','#e2bc52','#e05555'];
 
-  // Also add won/lost/open from deals
-  const summaryStages = [
-    { label: 'Open', count: deals.open || 0, color: '#4a9eff' },
-    { label: 'Won', count: deals.won || 0, color: '#2ecc8a' },
-    { label: 'Lost', count: deals.lost || 0, color: '#e05555' },
-  ];
-
-  const allStages = summaryStages.length > 0 ? summaryStages : stageEntries.map(([k,v], i) => ({
-    label: formatStageLabel(k), count: v, color: stageColors[i % stageColors.length]
-  }));
+  // Use real stage breakdown if available, otherwise fall back
+  let allStages;
+  const stageEntries = Object.entries(stageCounts || {});
+  if (stageEntries.length > 0) {
+    allStages = stageEntries.map(([k, v], i) => ({
+      label: k,
+      count: v,
+      color: stageColors[k] || defaultColors[i % defaultColors.length]
+    })).sort((a, b) => b.count - a.count);
+  } else {
+    allStages = [
+      { label: 'Open', count: deals.open || 0, color: '#4a9eff' },
+      { label: 'Won', count: deals.won || 0, color: '#2ecc8a' },
+      { label: 'Lost', count: deals.lost || 0, color: '#e05555' },
+    ];
+  }
 
   const maxC = Math.max(...allStages.map(s=>s.count), 1);
 
@@ -763,37 +865,66 @@ function renderStages(stageCounts, deals) {
 }
 
 function renderOppsTable(opps) {
+  const stageColors = {
+    'Appt Booked': 'badge-blue',
+    'Follow Up': 'badge-gold',
+    'No Show': 'badge-red',
+    'Joined Tier 1 (Closed)': 'badge-green',
+    'Joined Tier 2 (Closed)': 'badge-green',
+    'Disqualified': '',
+    'Lost': 'badge-red',
+  };
+
   if (!opps || opps.length === 0) {
-    const empty = '<tr><td colspan="6" style="color:var(--text-muted); padding:20px 0;">No opportunities found</td></tr>';
-    document.getElementById('opportunitiesTable').innerHTML = empty;
-    document.getElementById('recentOppsTable').innerHTML = '<tr><td colspan="3" style="color:var(--text-muted); padding:20px 0;">No data</td></tr>';
+    const empty = '<tr><td colspan="5" style="color:var(--text-muted); padding:20px 0;">No opportunities found</td></tr>';
+    const el = document.getElementById('opportunitiesTable');
+    if (el) el.innerHTML = empty;
+    const el2 = document.getElementById('recentOppsTable');
+    if (el2) el2.innerHTML = '<tr><td colspan="3" style="color:var(--text-muted); padding:20px 0;">No data</td></tr>';
     return;
   }
 
-  const statusBadge = (s) => {
-    if (s === 'won') return 'badge-green';
-    if (s === 'lost') return 'badge-red';
-    return 'badge-gold';
+  // Map stage UUIDs to names
+  const STAGE_MAP = {
+    'e9d10a34-c3aa-4e4d-9608-1d215edd1698': 'Appt Booked',
+    'a3cd98e8-6d83-43fc-ac04-e2f134aa2505': 'Follow Up',
+    'b3d5b27d-5e05-4caf-b81b-b600b75cb340': 'No Show',
+    '530af868-6d95-4956-bda4-00c00200290f': 'Follow Up',
+    '654dc63e-e9a8-4417-8171-1bc1a6583f4f': 'Joined Tier 1',
+    '925a28d4-baaa-4d08-b576-dc439df33256': 'Joined Tier 2',
+    '68d77162-a7a1-4cfa-8f32-ab9a4f203f2b': 'Disqualified',
+    '0ef5489e-8566-4772-95fd-1b5cb057ba5e': 'Lost',
+    '7f713361-b429-4bf7-8cd4-94bf295e69a9': 'No Show',
   };
 
-  document.getElementById('opportunitiesTable').innerHTML = opps.slice(0, 15).map(o => `
-    <tr>
-      <td style="color:var(--text)">${o.contact?.name || o.name || 'Unknown'}</td>
-      <td>${o.pipeline?.name || '—'}</td>
-      <td><span class="badge badge-amber">${o.pipelineStage?.name || o.pipelineStageName || '—'}</span></td>
-      <td style="color:var(--text)">${o.monetaryValue ? formatMoney(o.monetaryValue) : '—'}</td>
-      <td><span class="badge ${statusBadge(o.status)}">${o.status || '—'}</span></td>
-      <td style="color:var(--text-muted)">${o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—'}</td>
-    </tr>
-  `).join('');
+  const oppEl = document.getElementById('opportunitiesTable');
+  if (oppEl) {
+    oppEl.innerHTML = opps.slice(0, 20).map(o => {
+      const stageName = STAGE_MAP[o.pipelineStageId] || o.pipelineStageName || '—';
+      const badgeClass = stageColors[stageName] || 'badge-amber';
+      const tags = (o.contact?.tags || []).filter(t => t !== 'webinar' && !t.includes('260') && !t.includes('250'));
+      const tagHtml = tags.slice(0,2).map(t => `<span class="badge badge-blue" style="margin-right:3px">${t}</span>`).join('');
+      return `<tr>
+        <td style="color:var(--text)">${o.contact?.name || o.name || 'Unknown'}</td>
+        <td><span class="badge ${badgeClass}">${stageName}</span></td>
+        <td>${tagHtml || '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td><span class="badge ${o.status === 'won' ? 'badge-green' : o.status === 'lost' ? 'badge-red' : 'badge-gold'}">${o.status || '—'}</span></td>
+        <td style="color:var(--text-muted)">${o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—'}</td>
+      </tr>`;
+    }).join('');
+  }
 
-  document.getElementById('recentOppsTable').innerHTML = opps.slice(0, 6).map(o => `
-    <tr>
-      <td style="color:var(--text)">${o.contact?.name || o.name || 'Unknown'}</td>
-      <td style="color:var(--text)">${o.monetaryValue ? formatMoney(o.monetaryValue) : '—'}</td>
-      <td><span class="badge ${statusBadge(o.status)}">${o.status || '—'}</span></td>
-    </tr>
-  `).join('');
+  const recentEl = document.getElementById('recentOppsTable');
+  if (recentEl) {
+    recentEl.innerHTML = opps.slice(0, 6).map(o => {
+      const stageName = STAGE_MAP[o.pipelineStageId] || '—';
+      return `<tr>
+        <td style="color:var(--text)">${o.contact?.name || o.name || 'Unknown'}</td>
+        <td style="color:var(--text-mid)">${stageName}</td>
+        <td><span class="badge ${o.status === 'won' ? 'badge-green' : o.status === 'lost' ? 'badge-red' : 'badge-gold'}">${o.status || '—'}</span></td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 // ── MOCK DATA FALLBACK ──
