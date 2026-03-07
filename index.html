@@ -434,6 +434,11 @@ header {
         <div class="kpi-value gold" id="ov-pipeline">—</div>
         <div class="kpi-delta delta-neutral">Open opportunities</div>
       </div>
+      <div class="kpi">
+        <div class="kpi-label">Cost / Booked Call <span class="source-badge source-live">Live</span></div>
+        <div class="kpi-value" id="ov-cpbc">—</div>
+        <div class="kpi-delta delta-neutral" id="ov-cpbc-sub">Spend ÷ calls booked</div>
+      </div>
     </div>
 
     <div class="grid-3-1">
@@ -804,6 +809,7 @@ const WORKER_URL = 'https://restless-wildflower-1f9falign-proxy.nick-0f0.workers
 // ── STATE ──
 let ghlData  = null;
 let whopData = null;
+let lastMetaSpend = 0;
 let charts   = {};
 
 // ── FETCH GHL ──
@@ -1099,6 +1105,7 @@ function renderGHLData() {
   setText('ov-booked-delta', `${appointments.noShow} no-shows`);
   setText('ov-showrate-delta', `${completedCalls} completed calls`);
   setText('ov-won-delta', `${deals.lost} lost`);
+  updateCPBC(appointments.booked || 0);
 
   // Pipeline KPIs
   setText('pl-booked', appointments.booked || 0);
@@ -1496,6 +1503,16 @@ function initMockCharts() {
 }
 
 // ── HELPERS ──
+let lastBookedCalls = 0;
+
+function updateCPBC(booked) {
+  if (booked !== undefined) lastBookedCalls = booked;
+  const cpbc = lastMetaSpend > 0 && lastBookedCalls > 0
+    ? lastMetaSpend / lastBookedCalls
+    : 0;
+  setText('ov-cpbc',     cpbc > 0 ? formatMoney(cpbc) : '—');
+  setText('ov-cpbc-sub', cpbc > 0 ? `${formatMoney(lastMetaSpend)} spend · ${lastBookedCalls} calls` : 'Awaiting both data sources');
+}
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
@@ -1614,6 +1631,8 @@ function renderMetaData(d) {
   // Overview bar
   setText('ov-leads', summary.leads.toLocaleString());
   setText('ov-cpl',   `CPL: ${summary.cpl > 0 ? formatMoney(summary.cpl) : '—'}`);
+  lastMetaSpend = summary.spend || 0;
+  updateCPBC();
 
   // Per-account cards — order matches account IDs
   if (accounts && accounts.length >= 1) {
