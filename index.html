@@ -771,24 +771,20 @@ async function fetchGHL() {
     if (activeRange.startTime) params.set('startTime', activeRange.startTime);
     if (activeRange.endTime)   params.set('endTime',   activeRange.endTime);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 7000);
     const res = await fetch(`${WORKER_URL}/ghl/summary?${params.toString()}`, { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     ghlData = await res.json();
-
     setStatus('live');
-    document.getElementById('data-status').textContent = 'GHL Live · Meta soon';
+    document.getElementById('data-status').textContent = 'GHL Live · Whop Live · WJ Live';
     document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
-
     renderGHLData();
     hideError();
-
   } catch (err) {
     setStatus('error');
-    document.getElementById('last-refresh').textContent = 'Connection failed';
-    document.getElementById('data-status').textContent = 'Using mock data — Worker not connected yet';
-    showError(`GHL connection failed: ${err.message}. Deploy the Cloudflare Worker and update WORKER_URL in the dashboard.`);
+    document.getElementById('last-refresh').textContent = 'GHL failed — ' + err.message;
+    document.getElementById('data-status').textContent = 'GHL error · check worker';
     renderMockData();
   }
 }
@@ -1548,11 +1544,10 @@ function renderUpcomingTable(upcoming) {
 
 // ── INIT ──
 initMockCharts();
-// Default to 30D on load
 activeRange = { startTime: new Date(Date.now() - 30 * 86400000).getTime(), endTime: Date.now() };
 fetchGHL();
-fetchWhop();
-fetchWebinar();
+setTimeout(fetchWhop,    800);
+setTimeout(fetchWebinar, 1600);
 
 // Auto-refresh every 15 min
 setInterval(loadAllData, 15 * 60 * 1000);
