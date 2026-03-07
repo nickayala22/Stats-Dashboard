@@ -405,14 +405,14 @@ header {
   <div class="panel active" id="panel-overview">
     <div class="kpi-grid" style="grid-template-columns: repeat(6, 1fr);">
       <div class="kpi">
-        <div class="kpi-label">Ad Spend (MTD) <span class="source-badge source-mock">Mock</span></div>
-        <div class="kpi-value gold">$18,420</div>
-        <div class="kpi-delta delta-up">↑ 12% vs last month</div>
+        <div class="kpi-label">Total Revenue <span class="source-badge source-live">Live</span></div>
+        <div class="kpi-value gold" id="ov-revenue">—</div>
+        <div class="kpi-delta delta-neutral" id="ov-revenue-sub">Loading...</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Leads Generated <span class="source-badge source-mock">Mock</span></div>
-        <div class="kpi-value">1,248</div>
-        <div class="kpi-delta delta-up">↑ 8%</div>
+        <div class="kpi-label">Leads Generated <span class="source-badge source-live">Live</span></div>
+        <div class="kpi-value" id="ov-leads">—</div>
+        <div class="kpi-delta delta-neutral" id="ov-cpl">CPL: —</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Calls Booked <span class="source-badge source-live">Live</span></div>
@@ -587,41 +587,51 @@ header {
   <!-- ═══ META ADS ═══ -->
   <div class="panel" id="panel-ads">
 
-    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <!-- Combined Total -->
+    <div class="section-header">Combined Total — Both Accounts</div>
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:24px;">
       <div class="kpi">
-        <div class="kpi-label">Total Spend <span class="source-badge source-live">Meta Live</span></div>
-        <div class="kpi-value" id="meta-spend">—</div>
+        <div class="kpi-label">Total Spend <span class="source-badge source-live">Live</span></div>
+        <div class="kpi-value gold" id="meta-spend">—</div>
         <div class="kpi-delta delta-neutral" id="meta-spend-sub">Both accounts</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Leads <span class="source-badge source-live">Meta Live</span></div>
+        <div class="kpi-label">Leads</div>
         <div class="kpi-value green" id="meta-leads">—</div>
         <div class="kpi-delta delta-neutral" id="meta-cpl">CPL: —</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Clicks <span class="source-badge source-live">Meta Live</span></div>
+        <div class="kpi-label">Clicks</div>
         <div class="kpi-value" id="meta-clicks">—</div>
         <div class="kpi-delta delta-neutral" id="meta-ctr">CTR: —</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Impressions <span class="source-badge source-live">Meta Live</span></div>
+        <div class="kpi-label">Impressions</div>
         <div class="kpi-value" id="meta-impressions">—</div>
         <div class="kpi-delta delta-neutral" id="meta-purchases-sub">— purchases</div>
       </div>
     </div>
 
-    <!-- Daily spend chart -->
-    <div class="section-header" style="margin-top:24px;">Daily Spend</div>
-    <div style="height:200px; margin-bottom:24px;"><canvas id="metaDailyChart"></canvas></div>
+    <!-- Per-account KPI cards -->
+    <div class="section-header">Account 1 — ID: 1462406021929515</div>
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:24px;">
+      <div class="kpi"><div class="kpi-label">Spend</div><div class="kpi-value" id="meta-a1-spend">—</div></div>
+      <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value green" id="meta-a1-leads">—</div><div class="kpi-delta" id="meta-a1-cpl">CPL: —</div></div>
+      <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-value" id="meta-a1-clicks">—</div><div class="kpi-delta" id="meta-a1-ctr">CTR: —</div></div>
+      <div class="kpi"><div class="kpi-label">CPM</div><div class="kpi-value" id="meta-a1-cpm">—</div></div>
+    </div>
 
-    <!-- Per-account breakdown -->
-    <div class="section-header">Account Breakdown</div>
-    <table class="data-table" style="margin-bottom:24px;">
-      <thead><tr>
-        <th>Account ID</th><th>Spend</th><th>Leads</th><th>CPL</th><th>Clicks</th><th>CTR</th><th>CPM</th>
-      </tr></thead>
-      <tbody id="metaAccountTable"><tr><td colspan="7" style="color:var(--text-muted);padding:16px 0;">Loading...</td></tr></tbody>
-    </table>
+    <div class="section-header">Account 2 — ID: 1024975848401278</div>
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:24px;">
+      <div class="kpi"><div class="kpi-label">Spend</div><div class="kpi-value" id="meta-a2-spend">—</div></div>
+      <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value green" id="meta-a2-leads">—</div><div class="kpi-delta" id="meta-a2-cpl">CPL: —</div></div>
+      <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-value" id="meta-a2-clicks">—</div><div class="kpi-delta" id="meta-a2-ctr">CTR: —</div></div>
+      <div class="kpi"><div class="kpi-label">CPM</div><div class="kpi-value" id="meta-a2-cpm">—</div></div>
+    </div>
+
+    <!-- Daily spend chart -->
+    <div class="section-header">Daily Spend</div>
+    <div style="height:220px; margin-bottom:24px;"><canvas id="metaDailyChart"></canvas></div>
 
   </div>
 
@@ -962,6 +972,11 @@ function renderWhopData() {
   setText('wh-refunds',     formatMoney(refunds.total));
   setText('wh-refund-count',`${refunds.count} refunds`);
   setText('wh-disputes',    disputes.count);
+
+  // Overview bar
+  const totalSales = (revenue.countByTier['Tier 1']||0) + (revenue.countByTier['Tier 2']||0) + (revenue.countByTier['Tier 3']||0);
+  setText('ov-revenue',     formatMoney(revenue.total));
+  setText('ov-revenue-sub', `${totalSales} sales · ${formatMoney(refunds.total)} refunded`);
 
   // Tier KPIs
   ['Tier 1','Tier 2','Tier 3'].forEach((t, i) => {
@@ -1532,6 +1547,8 @@ function setPreset(el, preset) {
   document.getElementById('dateTo').value = '';
 
   fetchGHL();
+  fetchWhop();
+  fetchMeta();
 }
 
 function applyCustomRange() {
@@ -1548,6 +1565,8 @@ function applyCustomRange() {
   };
 
   fetchGHL();
+  fetchWhop();
+  fetchMeta();
 }
 
 function loadAllData() {
@@ -1582,14 +1601,43 @@ function renderMetaData(d) {
   lastMetaData = d;
   const { summary, accounts, daily } = d;
 
-  setText('meta-spend',       formatMoney(summary.spend));
-  setText('meta-spend-sub',   'Both accounts combined');
-  setText('meta-leads',       summary.leads);
-  setText('meta-cpl',         `CPL: ${summary.cpl > 0 ? formatMoney(summary.cpl) : '—'}`);
-  setText('meta-clicks',      summary.clicks.toLocaleString());
-  setText('meta-ctr',         `CTR: ${summary.ctr}%`);
-  setText('meta-impressions', summary.impressions.toLocaleString());
+  // Combined totals
+  setText('meta-spend',         formatMoney(summary.spend));
+  setText('meta-spend-sub',     'Both accounts combined');
+  setText('meta-leads',         summary.leads.toLocaleString());
+  setText('meta-cpl',           `CPL: ${summary.cpl > 0 ? formatMoney(summary.cpl) : '—'}`);
+  setText('meta-clicks',        summary.clicks.toLocaleString());
+  setText('meta-ctr',           `CTR: ${summary.ctr}%`);
+  setText('meta-impressions',   summary.impressions.toLocaleString());
   setText('meta-purchases-sub', `${summary.purchases} purchases`);
+
+  // Overview bar
+  setText('ov-leads', summary.leads.toLocaleString());
+  setText('ov-cpl',   `CPL: ${summary.cpl > 0 ? formatMoney(summary.cpl) : '—'}`);
+
+  // Per-account cards — order matches account IDs
+  if (accounts && accounts.length >= 1) {
+    const a1 = accounts.find(a => a.accountId === '1462406021929515') || accounts[0];
+    if (!a1.error) {
+      setText('meta-a1-spend',  formatMoney(a1.spend));
+      setText('meta-a1-leads',  a1.leads);
+      setText('meta-a1-cpl',    `CPL: ${a1.cpl > 0 ? formatMoney(a1.cpl) : '—'}`);
+      setText('meta-a1-clicks', a1.clicks.toLocaleString());
+      setText('meta-a1-ctr',    `CTR: ${a1.ctr.toFixed(2)}%`);
+      setText('meta-a1-cpm',    formatMoney(a1.cpm));
+    }
+  }
+  if (accounts && accounts.length >= 2) {
+    const a2 = accounts.find(a => a.accountId === '1024975848401278') || accounts[1];
+    if (!a2.error) {
+      setText('meta-a2-spend',  formatMoney(a2.spend));
+      setText('meta-a2-leads',  a2.leads);
+      setText('meta-a2-cpl',    `CPL: ${a2.cpl > 0 ? formatMoney(a2.cpl) : '—'}`);
+      setText('meta-a2-clicks', a2.clicks.toLocaleString());
+      setText('meta-a2-ctr',    `CTR: ${a2.ctr.toFixed(2)}%`);
+      setText('meta-a2-cpm',    formatMoney(a2.cpm));
+    }
+  }
 
   // Daily spend chart
   if (charts.metaDaily) charts.metaDaily.destroy();
@@ -1604,23 +1652,6 @@ function renderMetaData(d) {
       },
       options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#8892a4', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#8892a4', callback: v => '$'+v }, beginAtZero:true } } }
     });
-  }
-
-  // Account breakdown table
-  const tbody = document.getElementById('metaAccountTable');
-  if (tbody && accounts) {
-    tbody.innerHTML = accounts.map(a => {
-      if (a.error) return `<tr><td>${a.accountId}</td><td colspan="6" style="color:var(--red);">${a.error}</td></tr>`;
-      return `<tr>
-        <td style="font-size:11px;color:var(--text-muted);">${a.accountId}</td>
-        <td style="font-weight:500;">${formatMoney(a.spend)}</td>
-        <td class="green">${a.leads}</td>
-        <td>${a.cpl > 0 ? formatMoney(a.cpl) : '—'}</td>
-        <td>${a.clicks.toLocaleString()}</td>
-        <td>${a.ctr.toFixed(2)}%</td>
-        <td>${formatMoney(a.cpm)}</td>
-      </tr>`;
-    }).join('');
   }
 }
 
