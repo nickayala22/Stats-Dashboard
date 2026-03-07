@@ -764,12 +764,19 @@ function hideError() {
 async function fetchWhop() {
   try {
     const res = await fetch(`${WORKER_URL}/whop/summary`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    whopData = await res.json();
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('Whop error:', data);
+      document.getElementById('wh-total-rev').textContent = 'Error';
+      document.getElementById('wh-total-count').textContent = data.error || 'Check worker logs';
+      return;
+    }
+    whopData = data;
     renderWhopData();
   } catch (err) {
     console.warn('Whop fetch failed:', err.message);
-    // Don't block the whole dashboard, just show dashes
+    document.getElementById('wh-total-rev').textContent = 'Error';
+    document.getElementById('wh-total-count').textContent = err.message;
   }
 }
 
