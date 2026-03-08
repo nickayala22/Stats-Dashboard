@@ -55,7 +55,7 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 28px 0 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--gold);
   margin-bottom: 32px;
   flex-wrap: wrap;
   gap: 16px;
@@ -164,7 +164,7 @@ header {
   white-space: nowrap;
 }
 .tab:hover { color: var(--text); }
-.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); background: var(--gold-dim); }
 
 .panel { display: none; }
 .panel.active { display: block; }
@@ -216,6 +216,7 @@ header {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--gold-dim);
   border-radius: 10px; padding: 22px;
   position: relative; overflow: hidden;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
@@ -223,7 +224,7 @@ header {
 .card::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(180,140,30,0.2), transparent);
+  background: linear-gradient(90deg, var(--gold), rgba(180,140,30,0.1), transparent);
 }
 
 .card-title {
