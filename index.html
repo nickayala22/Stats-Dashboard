@@ -8,24 +8,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg: #0a0f1a;
-  --surface: #0f1825;
-  --surface2: #141f30;
-  --border: rgba(196, 160, 60, 0.15);
-  --border-bright: rgba(196, 160, 60, 0.4);
-  --gold: #c4a03c;
-  --gold-light: #e2bc52;
-  --gold-dim: rgba(196, 160, 60, 0.08);
-  --text: #dde4f0;
-  --text-muted: #5a6e8a;
-  --text-mid: #8fa4c0;
-  --green: #00e887;
-  --green-dim: rgba(0, 232, 135, 0.1);
-  --red: #e05555;
-  --red-dim: rgba(224, 85, 85, 0.1);
-  --amber: #e8a030;
-  --amber-dim: rgba(232, 160, 48, 0.1);
-  --blue: #4a9eff;
+  --bg: #ffffff;
+  --surface: #f8f9fb;
+  --surface2: #f0f2f5;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-bright: rgba(180, 140, 30, 0.4);
+  --gold: #9a7a1e;
+  --gold-light: #b8920f;
+  --gold-dim: rgba(180, 140, 30, 0.08);
+  --text: #0d1520;
+  --text-muted: #7a8799;
+  --text-mid: #4a5568;
+  --green: #0a8f55;
+  --green-dim: rgba(10, 143, 85, 0.08);
+  --red: #c0392b;
+  --red-dim: rgba(192, 57, 43, 0.08);
+  --amber: #c07a10;
+  --amber-dim: rgba(192, 122, 16, 0.1);
+  --blue: #1a6fc4;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,28 +38,9 @@ body {
   overflow-x: hidden;
 }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.4;
-}
+body::after { display: none; }
 
-body::before {
-  content: '';
-  position: fixed;
-  top: -200px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 800px;
-  height: 400px;
-  background: radial-gradient(ellipse, rgba(196,160,60,0.06) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
+body::before { display: none; }
 
 .wrap {
   position: relative;
@@ -194,6 +175,7 @@ header {
   border: 1px solid var(--border);
   border-radius: 10px; overflow: hidden;
   margin-bottom: 28px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .kpi {
@@ -236,11 +218,12 @@ header {
   border: 1px solid var(--border);
   border-radius: 10px; padding: 22px;
   position: relative; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 .card::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(196,160,60,0.25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(180,140,30,0.2), transparent);
 }
 
 .card-title {
@@ -258,7 +241,7 @@ header {
 .funnel-nums { display: flex; gap: 12px; align-items: baseline; }
 .funnel-count { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 300; color: var(--text); }
 .funnel-pct { font-size: 10px; color: var(--gold); }
-.funnel-bar-bg { height: 6px; background: rgba(255,255,255,0.04); border-radius: 3px; overflow: hidden; }
+.funnel-bar-bg { height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; }
 .funnel-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold-dim) 0%, var(--gold) 100%); transition: width 1s cubic-bezier(0.16,1,0.3,1); }
 .funnel-bar.green-bar { background: linear-gradient(90deg, var(--green-dim) 0%, var(--green) 100%); }
 .funnel-drop { font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; }
@@ -271,7 +254,7 @@ header {
 }
 .data-table th:not(:first-child) { text-align: right; }
 .data-table td {
-  padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+  padding: 11px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
   color: var(--text-mid); vertical-align: middle;
 }
 .data-table td:not(:first-child) { text-align: right; }
@@ -291,7 +274,7 @@ header {
 
 .rep-avatar {
   width: 26px; height: 26px; border-radius: 50%;
-  background: #1c3050;
+  background: var(--gold-dim);
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; color: var(--gold);
   border: 1px solid var(--border); flex-shrink: 0;
@@ -394,7 +377,7 @@ header {
   <header>
     <div class="header-left">
       <div class="logo-row">
-        <img src="capital_unlocked_new_logo_white.png" alt="Capital Unlocked" style="height:80px; width:auto; display:block;">
+        <img src="capital_unlocked_new_logo_white.png" alt="Capital Unlocked" style="height:80px; width:auto; display:block; background:#0d1520; border-radius:8px; padding:6px 10px;">
       </div>
       <div class="header-sub">Command Center &nbsp;·&nbsp; <span id="data-status">Loading live data...</span></div>
     </div>
@@ -1023,7 +1006,7 @@ function renderWebinarData(d) {
         labels: sorted.map(([d]) => d.slice(5)),
         datasets: [{ label: 'Registrations', data: sorted.map(([,v]) => v), backgroundColor: 'rgba(212,175,55,0.7)', borderRadius: 3 }]
       },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#8892a4', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#8892a4' }, beginAtZero:true, precision:0 } } }
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#4a5568', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#4a5568' }, beginAtZero:true, precision:0 } } }
     });
   }
 
@@ -1037,7 +1020,7 @@ function renderWebinarData(d) {
         labels: ['Attended', 'No-Show'],
         datasets: [{ data: [stats.attended, stats.noShowed], backgroundColor: ['#00e887','#e05252'], borderWidth: 0 }]
       },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#4a5568', font:{size:11} } } } }
     });
   }
 
@@ -1125,7 +1108,7 @@ function renderWhopData() {
         labels: sorted.map(([d]) => d.slice(5)),
         datasets: [{ label: 'Sales', data: sorted.map(([,v]) => v.count || v), backgroundColor: 'rgba(212,175,55,0.7)', borderRadius: 3 }]
       },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#8892a4', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#8892a4' }, beginAtZero:true, precision:0 } } }
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#4a5568', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#4a5568' }, beginAtZero:true, precision:0 } } }
     });
   }
 
@@ -1139,7 +1122,7 @@ function renderWhopData() {
         labels: ['Tier 1', 'Tier 2', 'Tier 3'],
         datasets: [{ data: [revenue.byTier['Tier 1']||0, revenue.byTier['Tier 2']||0, revenue.byTier['Tier 3']||0], backgroundColor: ['#4a7fa5','#d4af37','#c8a04a'], borderWidth:0 }]
       },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#4a5568', font:{size:11} } } } }
     });
   }
 
@@ -1153,7 +1136,7 @@ function renderWhopData() {
         labels: ['Active', 'Cancelled', 'Expired'],
         datasets: [{ data: [members.active, members.cancelled, members.expired], backgroundColor: ['#00e887','#e05252','#8892a4'], borderWidth:0 }]
       },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#4a5568', font:{size:11} } } } }
     });
   }
 
@@ -1167,7 +1150,7 @@ function renderWhopData() {
         labels: ['Tier 1', 'Tier 2', 'Tier 3'],
         datasets: [{ data: [members.byTier['Tier 1']||0, members.byTier['Tier 2']||0, members.byTier['Tier 3']||0], backgroundColor: ['#4a7fa5','#d4af37','#c8a04a'], borderWidth:0 }]
       },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#c5ccd9', font:{size:11} } } } }
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#4a5568', font:{size:11} } } } }
     });
   }
 
@@ -1375,7 +1358,7 @@ function renderDailyBookings(appointments) {
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { display: false }, ticks: { maxRotation: 0 } },
-        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { stepSize: 1 }, beginAtZero: true }
+        y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { stepSize: 1 }, beginAtZero: true }
       }
     }
   });
@@ -1571,7 +1554,7 @@ function renderDealStatusChart(deals, wonVal, pipelineVal) {
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { display: false } },
-        y: { grid: { color: 'rgba(255,255,255,0.03)' } }
+        y: { grid: { color: 'rgba(0,0,0,0.06)' } }
       }
     }
   });
@@ -1601,8 +1584,8 @@ function initMockCharts() {
         responsive:true, maintainAspectRatio:false,
         plugins: { legend: { display:false } },
         scales: {
-          x: { grid:{color:'rgba(255,255,255,0.03)'}, ticks:{maxRotation:0, maxTicksLimit:8} },
-          y: { grid:{color:'rgba(255,255,255,0.03)'}, position:'left', ticks:{callback:v=>'$'+v} },
+          x: { grid:{color:'rgba(0,0,0,0.06)'}, ticks:{maxRotation:0, maxTicksLimit:8} },
+          y: { grid:{color:'rgba(0,0,0,0.06)'}, position:'left', ticks:{callback:v=>'$'+v} },
           y2: { grid:{display:false}, position:'right' }
         }
       }
@@ -1631,8 +1614,8 @@ function initMockCharts() {
         responsive:true, maintainAspectRatio:false,
         plugins:{legend:{display:false}},
         scales:{
-          x:{grid:{color:'rgba(255,255,255,0.03)'}},
-          y:{grid:{color:'rgba(255,255,255,0.03)'}, ticks:{callback:v=>'$'+Math.round(v/1000)+'k'}}
+          x:{grid:{color:'rgba(0,0,0,0.06)'}},
+          y:{grid:{color:'rgba(0,0,0,0.06)'}, ticks:{callback:v=>'$'+Math.round(v/1000)+'k'}}
         }
       }
     });
@@ -1667,9 +1650,8 @@ function setText(id, val) {
 
 function formatMoney(n) {
   if (!n || n === 0) return '$0';
-  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
-  if (n >= 1000) return '$' + Math.round(n/1000) + 'k';
-  return '$' + n.toLocaleString();
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
 function formatStageLabel(key) {
@@ -1839,7 +1821,7 @@ function renderMetaData(d) {
         labels: sorted.map(([d]) => d.slice(5)),
         datasets: [{ label: 'Spend ($)', data: sorted.map(([,v]) => v.spend || 0), backgroundColor: 'rgba(212,175,55,0.7)', borderRadius: 3 }]
       },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#8892a4', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#8892a4', callback: v => '$'+v }, beginAtZero:true } } }
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#4a5568', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#4a5568', callback: v => '$'+v }, beginAtZero:true } } }
     });
   }
 
@@ -1861,9 +1843,9 @@ function renderMetaData(d) {
         responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{ display:false } },
         scales:{
-          x:{ grid:{color:'rgba(255,255,255,0.03)'}, ticks:{maxRotation:0, maxTicksLimit:8, color:'#8892a4', font:{size:9}} },
-          y:{ grid:{color:'rgba(255,255,255,0.03)'}, position:'left', ticks:{callback:v=>'$'+v, color:'#8892a4'} },
-          y2:{ grid:{display:false}, position:'right', ticks:{color:'#8892a4'} }
+          x:{ grid:{color:'rgba(0,0,0,0.06)'}, ticks:{maxRotation:0, maxTicksLimit:8, color:'#4a5568', font:{size:9}} },
+          y:{ grid:{color:'rgba(0,0,0,0.06)'}, position:'left', ticks:{callback:v=>'$'+v, color:'#4a5568'} },
+          y2:{ grid:{display:false}, position:'right', ticks:{color:'#4a5568'} }
         }
       }
     });
