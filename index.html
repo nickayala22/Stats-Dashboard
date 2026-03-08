@@ -466,6 +466,30 @@ header {
       </div>
     </div>
 
+    <!-- Today vs Yesterday -->
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:16px;">
+      <div class="kpi" style="border:1px solid var(--border); border-radius:8px; padding:14px 16px;">
+        <div class="kpi-label">Leads Today <span class="source-badge source-live">Meta</span></div>
+        <div class="kpi-value" id="ov-leads-today">—</div>
+        <div class="kpi-delta" id="ov-leads-today-delta">vs yesterday: —</div>
+      </div>
+      <div class="kpi" style="border:1px solid var(--border); border-radius:8px; padding:14px 16px;">
+        <div class="kpi-label">Leads Yesterday <span class="source-badge source-live">Meta</span></div>
+        <div class="kpi-value" id="ov-leads-yesterday">—</div>
+        <div class="kpi-delta delta-neutral" id="ov-leads-yesterday-sub">Prior day</div>
+      </div>
+      <div class="kpi" style="border:1px solid var(--border); border-radius:8px; padding:14px 16px;">
+        <div class="kpi-label">Sales Today <span class="source-badge source-live">Whop</span></div>
+        <div class="kpi-value gold" id="ov-sales-today">—</div>
+        <div class="kpi-delta" id="ov-sales-today-delta">vs yesterday: —</div>
+      </div>
+      <div class="kpi" style="border:1px solid var(--border); border-radius:8px; padding:14px 16px;">
+        <div class="kpi-label">Sales Yesterday <span class="source-badge source-live">Whop</span></div>
+        <div class="kpi-value gold" id="ov-sales-yesterday">—</div>
+        <div class="kpi-delta delta-neutral" id="ov-sales-yesterday-sub">Prior day</div>
+      </div>
+    </div>
+
     <div class="grid-3-1">
       <div class="card">
         <div class="card-title">Full Funnel <span>Lead → Closed</span></div>
@@ -762,6 +786,21 @@ header {
       </div>
     </div>
 
+    <!-- Today vs Yesterday Sales -->
+    <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); margin-top:0;">
+      <div class="kpi" style="border:1px solid var(--border); border-radius:8px; padding:14px 16px;">
+        <div class="kpi-label">Sales Today <span class="source-badge source-live">Whop</span></div>
+        <div class="kpi-value gold" id="rv-sales-today">—</div>
+        <div class="kpi-delta" id="rv-sales-today-delta">vs yesterday: —</div>
+        <div class="kpi-delta delta-neutral" id="rv-sales-today-rev" style="margin-top:2px;">—</div>
+      </div>
+      <div class="kpi" style="border:1px solid var(--border); border-radius:8px; padding:14px 16px;">
+        <div class="kpi-label">Sales Yesterday <span class="source-badge source-live">Whop</span></div>
+        <div class="kpi-value gold" id="rv-sales-yesterday">—</div>
+        <div class="kpi-delta delta-neutral" id="rv-sales-yesterday-rev" style="margin-top:2px;">Prior day revenue</div>
+      </div>
+    </div>
+
     <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-top:0;">
       <div class="kpi" style="border-top:2px solid var(--gold-dim);">
         <div class="kpi-label">Tier 1 Revenue <span style="color:var(--text-muted);font-size:9px;">≤$5K</span></div>
@@ -1044,6 +1083,30 @@ function renderWhopData() {
   setText('ov-revenue',     formatMoney(revenue.total));
   setText('ov-revenue-sub', `${totalSales} sales · ${refundRate}% refund rate`);
 
+  // Today vs yesterday sales
+  const todayKey     = new Date().toISOString().slice(0,10);
+  const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+  const todayData     = dailySales[todayKey]     || { count: 0, revenue: 0 };
+  const yesterdayData = dailySales[yesterdayKey] || { count: 0, revenue: 0 };
+  const salesDelta    = todayData.count - yesterdayData.count;
+  const salesDeltaStr = salesDelta > 0 ? `↑ ${salesDelta} vs yesterday` : salesDelta < 0 ? `↓ ${Math.abs(salesDelta)} vs yesterday` : '= same as yesterday';
+  const salesDeltaColor = salesDelta > 0 ? 'var(--green)' : salesDelta < 0 ? 'var(--red)' : 'var(--text-muted)';
+
+  setText('ov-sales-today',         todayData.count);
+  setText('ov-sales-today-delta',   salesDeltaStr);
+  setText('ov-sales-yesterday',     yesterdayData.count);
+  setText('ov-sales-yesterday-sub', `${formatMoney(yesterdayData.revenue)} revenue`);
+  setText('rv-sales-today',         todayData.count);
+  setText('rv-sales-today-delta',   salesDeltaStr);
+  setText('rv-sales-today-rev',     formatMoney(todayData.revenue));
+  setText('rv-sales-yesterday',     yesterdayData.count);
+  setText('rv-sales-yesterday-rev', `${formatMoney(yesterdayData.revenue)} revenue`);
+
+  const todayEl = document.getElementById('ov-sales-today-delta');
+  if (todayEl) todayEl.style.color = salesDeltaColor;
+  const rvTodayEl = document.getElementById('rv-sales-today-delta');
+  if (rvTodayEl) rvTodayEl.style.color = salesDeltaColor;
+
   // Tier KPIs
   ['Tier 1','Tier 2','Tier 3'].forEach((t, i) => {
     const key = `t${i+1}`;
@@ -1060,7 +1123,7 @@ function renderWhopData() {
       type: 'bar',
       data: {
         labels: sorted.map(([d]) => d.slice(5)),
-        datasets: [{ label: 'Sales', data: sorted.map(([,v]) => v), backgroundColor: 'rgba(212,175,55,0.7)', borderRadius: 3 }]
+        datasets: [{ label: 'Sales', data: sorted.map(([,v]) => v.count || v), backgroundColor: 'rgba(212,175,55,0.7)', borderRadius: 3 }]
       },
       options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#8892a4', font:{size:9}, maxRotation:45 } }, y:{ ticks:{ color:'#8892a4' }, beginAtZero:true, precision:0 } } }
     });
@@ -1721,6 +1784,25 @@ function renderMetaData(d) {
   lastMetaLeads  = summary.leads || 0;
   updateCPBC();
   updateLeadToBooked();
+
+  // Today vs yesterday leads
+  if (daily) {
+    const todayKey     = new Date().toISOString().slice(0,10);
+    const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    const leadsToday     = (daily[todayKey]     || {}).leads || 0;
+    const leadsYesterday = (daily[yesterdayKey] || {}).leads || 0;
+    const leadsDelta     = leadsToday - leadsYesterday;
+    const leadsDeltaStr  = leadsDelta > 0 ? `↑ ${leadsDelta} vs yesterday` : leadsDelta < 0 ? `↓ ${Math.abs(leadsDelta)} vs yesterday` : '= same as yesterday';
+    const leadsDeltaColor = leadsDelta > 0 ? 'var(--green)' : leadsDelta < 0 ? 'var(--red)' : 'var(--text-muted)';
+
+    setText('ov-leads-today',          leadsToday);
+    setText('ov-leads-today-delta',    leadsDeltaStr);
+    setText('ov-leads-yesterday',      leadsYesterday);
+    setText('ov-leads-yesterday-sub',  'Prior day');
+
+    const leadsDeltaEl = document.getElementById('ov-leads-today-delta');
+    if (leadsDeltaEl) leadsDeltaEl.style.color = leadsDeltaColor;
+  }
 
   // Per-account cards — order matches account IDs
   if (accounts && accounts.length >= 1) {
