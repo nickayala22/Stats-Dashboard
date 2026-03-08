@@ -379,7 +379,8 @@ header {
   <header>
     <div class="header-left">
       <div class="logo-row">
-        <img src="capital_unlocked_new_logo_white.png" alt="Capital Unlocked" style="height:80px; width:auto; display:block; background:#0d1520; border-radius:8px; padding:6px 10px;">
+        <img src="capital_unlocked_new_logo_white.png" alt="Capital Unlocked" style="height:70px; width:auto; display:block; filter: invert(1);">
+
       </div>
       <div class="header-sub">Command Center &nbsp;·&nbsp; <span id="data-status">Loading live data...</span></div>
     </div>
@@ -654,7 +655,7 @@ header {
 
     <!-- Combined Total -->
     <div class="section-header">Combined Total — Both Accounts</div>
-    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:24px;">
+    <div class="kpi-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom:24px;">
       <div class="kpi">
         <div class="kpi-label">Total Spend <span class="source-badge source-live">Live</span></div>
         <div class="kpi-value gold" id="meta-spend">—</div>
@@ -663,7 +664,12 @@ header {
       <div class="kpi">
         <div class="kpi-label">Leads</div>
         <div class="kpi-value green" id="meta-leads">—</div>
-        <div class="kpi-delta delta-neutral" id="meta-cpl">CPL: —</div>
+        <div class="kpi-delta delta-neutral" id="meta-cpl-sub">Both accounts</div>
+      </div>
+      <div class="kpi" style="background:var(--gold-dim);">
+        <div class="kpi-label">Cost Per Lead</div>
+        <div class="kpi-value gold" id="meta-cpl">—</div>
+        <div class="kpi-delta delta-neutral">Combined CPL</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Clicks</div>
@@ -679,17 +685,19 @@ header {
 
     <!-- Per-account KPI cards -->
     <div class="section-header">Account 1 — ID: 1462406021929515</div>
-    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:24px;">
-      <div class="kpi"><div class="kpi-label">Spend</div><div class="kpi-value" id="meta-a1-spend">—</div></div>
-      <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value green" id="meta-a1-leads">—</div><div class="kpi-delta" id="meta-a1-cpl">CPL: —</div></div>
+    <div class="kpi-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom:24px;">
+      <div class="kpi"><div class="kpi-label">Spend</div><div class="kpi-value gold" id="meta-a1-spend">—</div></div>
+      <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value green" id="meta-a1-leads">—</div></div>
+      <div class="kpi" style="background:var(--gold-dim);"><div class="kpi-label">Cost Per Lead</div><div class="kpi-value gold" id="meta-a1-cpl">—</div></div>
       <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-value" id="meta-a1-clicks">—</div><div class="kpi-delta" id="meta-a1-ctr">CTR: —</div></div>
       <div class="kpi"><div class="kpi-label">CPM</div><div class="kpi-value" id="meta-a1-cpm">—</div></div>
     </div>
 
     <div class="section-header">Account 2 — ID: 1024975848401278</div>
-    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:24px;">
-      <div class="kpi"><div class="kpi-label">Spend</div><div class="kpi-value" id="meta-a2-spend">—</div></div>
-      <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value green" id="meta-a2-leads">—</div><div class="kpi-delta" id="meta-a2-cpl">CPL: —</div></div>
+    <div class="kpi-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom:24px;">
+      <div class="kpi"><div class="kpi-label">Spend</div><div class="kpi-value gold" id="meta-a2-spend">—</div></div>
+      <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value green" id="meta-a2-leads">—</div></div>
+      <div class="kpi" style="background:var(--gold-dim);"><div class="kpi-label">Cost Per Lead</div><div class="kpi-value gold" id="meta-a2-cpl">—</div></div>
       <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-value" id="meta-a2-clicks">—</div><div class="kpi-delta" id="meta-a2-ctr">CTR: —</div></div>
       <div class="kpi"><div class="kpi-label">CPM</div><div class="kpi-value" id="meta-a2-cpm">—</div></div>
     </div>
@@ -1762,7 +1770,8 @@ function renderMetaData(d) {
   setText('meta-spend',         formatMoney(summary.spend));
   setText('meta-spend-sub',     'Both accounts combined');
   setText('meta-leads',         summary.leads.toLocaleString());
-  setText('meta-cpl',           `CPL: ${summary.cpl > 0 ? formatMoney(summary.cpl) : '—'}`);
+  setText('meta-cpl-sub',       `${summary.leads} leads · ${formatMoney(summary.spend)} spend`);
+  setText('meta-cpl',           summary.cpl > 0 ? formatMoney(summary.cpl) : '—');
   setText('meta-clicks',        summary.clicks.toLocaleString());
   setText('meta-ctr',           `CTR: ${summary.ctr}%`);
   setText('meta-impressions',   summary.impressions.toLocaleString());
@@ -1803,7 +1812,7 @@ function renderMetaData(d) {
     if (!a1.error) {
       setText('meta-a1-spend',  formatMoney(a1.spend));
       setText('meta-a1-leads',  a1.leads);
-      setText('meta-a1-cpl',    `CPL: ${a1.cpl > 0 ? formatMoney(a1.cpl) : '—'}`);
+      setText('meta-a1-cpl',    a1.cpl > 0 ? formatMoney(a1.cpl) : '—');
       setText('meta-a1-clicks', a1.clicks.toLocaleString());
       setText('meta-a1-ctr',    `CTR: ${a1.ctr.toFixed(2)}%`);
       setText('meta-a1-cpm',    formatMoney(a1.cpm));
@@ -1814,7 +1823,7 @@ function renderMetaData(d) {
     if (!a2.error) {
       setText('meta-a2-spend',  formatMoney(a2.spend));
       setText('meta-a2-leads',  a2.leads);
-      setText('meta-a2-cpl',    `CPL: ${a2.cpl > 0 ? formatMoney(a2.cpl) : '—'}`);
+      setText('meta-a2-cpl',    a2.cpl > 0 ? formatMoney(a2.cpl) : '—');
       setText('meta-a2-clicks', a2.clicks.toLocaleString());
       setText('meta-a2-ctr',    `CTR: ${a2.ctr.toFixed(2)}%`);
       setText('meta-a2-cpm',    formatMoney(a2.cpm));
