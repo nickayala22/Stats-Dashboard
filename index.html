@@ -180,23 +180,24 @@ header {
 
 .kpi {
   background: var(--surface);
-  padding: 22px 22px 20px;
+  padding: 26px 24px 22px;
   transition: background 0.15s;
 }
 .kpi:hover { background: var(--surface2); }
 
 .kpi-label {
   font-size: 9px; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--text-muted);
-  margin-bottom: 10px;
+  letter-spacing: 0.12em; color: var(--text-muted);
+  margin-bottom: 12px;
   display: flex; align-items: center; gap: 6px;
+  font-weight: 500;
 }
 
 .kpi-value {
   font-family: 'Fraunces', serif;
-  font-size: 30px; font-weight: 300;
+  font-size: 38px; font-weight: 300;
   color: var(--text); line-height: 1;
-  margin-bottom: 8px; letter-spacing: -1px;
+  margin-bottom: 8px; letter-spacing: -1.5px;
 }
 .kpi-value.gold { color: var(--gold-light); }
 .kpi-value.green { color: var(--green); }
@@ -217,7 +218,7 @@ header {
   background: var(--surface);
   border: 1px solid var(--border);
   border-left: 3px solid var(--gold-dim);
-  border-radius: 10px; padding: 22px;
+  border-radius: 10px; padding: 26px 24px;
   position: relative; overflow: hidden;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
@@ -592,16 +593,25 @@ header {
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Upcoming Appointments <span class="source-badge source-live">Live · Next 14 Days</span></div>
-      <table class="data-table">
-        <thead>
-          <tr><th>Contact</th><th>Date</th><th>Time</th><th>Closer</th><th>Status</th></tr>
-        </thead>
-        <tbody id="upcomingTable">
-          <tr><td colspan="5" style="color:var(--text-muted);padding:16px 0;">Loading...</td></tr>
-        </tbody>
-      </table>
+    <div class="grid-2">
+      <div class="card" style="border-left:3px solid var(--gold);">
+        <div class="card-title">Today's Appointments <span class="source-badge source-live">Live</span></div>
+        <div id="todayApptCount" style="font-family:'Fraunces',serif; font-size:36px; font-weight:300; color:var(--text); line-height:1; margin-bottom:4px;">—</div>
+        <div style="font-size:10px; color:var(--text-muted); margin-bottom:18px;" id="todayApptSub">Loading...</div>
+        <table class="data-table">
+          <thead><tr><th>Contact</th><th>Time</th><th>Closer</th><th>Status</th></tr></thead>
+          <tbody id="todayApptTable"><tr><td colspan="4" style="color:var(--text-muted);padding:16px 0;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="card" style="border-left:3px solid rgba(180,140,30,0.3);">
+        <div class="card-title">Tomorrow's Appointments <span class="source-badge source-live">Live</span></div>
+        <div id="tomorrowApptCount" style="font-family:'Fraunces',serif; font-size:36px; font-weight:300; color:var(--text); line-height:1; margin-bottom:4px;">—</div>
+        <div style="font-size:10px; color:var(--text-muted); margin-bottom:18px;" id="tomorrowApptSub">Loading...</div>
+        <table class="data-table">
+          <thead><tr><th>Contact</th><th>Time</th><th>Closer</th><th>Status</th></tr></thead>
+          <tbody id="tomorrowApptTable"><tr><td colspan="4" style="color:var(--text-muted);padding:16px 0;">Loading...</td></tr></tbody>
+        </table>
+      </div>
     </div>
 
     <div class="grid-1-2">
@@ -1855,29 +1865,51 @@ function renderMetaData(d) {
 
 // ── RENDER UPCOMING APPOINTMENTS ──
 function renderUpcomingTable(upcoming) {
-  const tbody = document.getElementById('upcomingTable');
-  if (!tbody) return;
-  if (!upcoming || upcoming.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);padding:16px 0;">No upcoming appointments found</td></tr>';
-    return;
-  }
-
   const statusColor = { confirmed: 'var(--gold)', showed: 'var(--green)', noshow: 'var(--red)' };
 
-  tbody.innerHTML = upcoming.map(a => {
-    const dt = new Date(a.startTime);
-    const date = dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-    const time = dt.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-    const st   = (a.status || 'confirmed').toLowerCase();
-    const color = statusColor[st] || 'var(--text-muted)';
-    return `<tr>
-      <td style="font-weight:500;">${a.contact}</td>
-      <td>${date}</td>
-      <td>${time}</td>
-      <td>${a.closer}</td>
-      <td><span style="color:${color};text-transform:capitalize;">${st}</span></td>
-    </tr>`;
-  }).join('');
+  const todayStr    = new Date().toISOString().slice(0,10);
+  const tomorrowStr = new Date(Date.now() + 86400000).toISOString().slice(0,10);
+
+  const todayAppts    = (upcoming || []).filter(a => new Date(a.startTime).toISOString().slice(0,10) === todayStr);
+  const tomorrowAppts = (upcoming || []).filter(a => new Date(a.startTime).toISOString().slice(0,10) === tomorrowStr);
+
+  function renderRows(appts, tbodyId, countId, subId, emptyMsg) {
+    const tbody = document.getElementById(tbodyId);
+    const countEl = document.getElementById(countId);
+    const subEl   = document.getElementById(subId);
+    if (!tbody) return;
+
+    if (countEl) countEl.textContent = appts.length;
+
+    const confirmed = appts.filter(a => (a.status||'confirmed').toLowerCase() === 'confirmed').length;
+    const showed    = appts.filter(a => (a.status||'').toLowerCase() === 'showed').length;
+    if (subEl) {
+      if (appts.length === 0) subEl.textContent = 'No appointments';
+      else subEl.textContent = `${confirmed} confirmed · ${showed} showed`;
+    }
+
+    if (appts.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-muted);padding:16px 0;">${emptyMsg}</td></tr>`;
+      return;
+    }
+
+    const sorted = [...appts].sort((a,b) => new Date(a.startTime) - new Date(b.startTime));
+    tbody.innerHTML = sorted.map(a => {
+      const dt   = new Date(a.startTime);
+      const time = dt.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+      const st   = (a.status || 'confirmed').toLowerCase();
+      const color = statusColor[st] || 'var(--text-muted)';
+      return `<tr>
+        <td style="font-weight:500;">${a.contact}</td>
+        <td>${time}</td>
+        <td>${a.closer}</td>
+        <td><span style="color:${color};text-transform:capitalize;">${st}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  renderRows(todayAppts,    'todayApptTable',    'todayApptCount',    'todayApptSub',    'No appointments today');
+  renderRows(tomorrowAppts, 'tomorrowApptTable', 'tomorrowApptCount', 'tomorrowApptSub', 'No appointments tomorrow');
 }
 
 // ── INIT ──
