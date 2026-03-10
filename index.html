@@ -513,6 +513,10 @@ header {
             <div class="kpi-label">Commissions (10%)</div>
             <div style="font-family:'Fraunces',serif; font-size:22px; font-weight:300; color:var(--red);" id="ov-np-commissions">—</div>
           </div>
+          <div>
+            <div class="kpi-label">Merchant Fees (3%)</div>
+            <div style="font-family:'Fraunces',serif; font-size:22px; font-weight:300; color:var(--red);" id="ov-np-merchant">—</div>
+          </div>
         </div>
       </div>
     </div>
@@ -938,16 +942,19 @@ let lastWhopRevenue = 0;
 let charts   = {};
 
 function updateNetProfit() {
-  if (lastWhopRevenue === 0 && lastMetaSpend === 0) return;
-  const commissions = lastWhopRevenue * 0.10;
-  const net = lastWhopRevenue - lastMetaSpend - commissions;
+  if (lastWhopRevenue === 0) return;
+  const commissions  = lastWhopRevenue * 0.10;
+  const merchantFees = lastWhopRevenue * 0.03;
+  const net = lastWhopRevenue - lastMetaSpend - commissions - merchantFees;
   const color = net >= 0 ? 'var(--gold)' : 'var(--red)';
   const el = document.getElementById('ov-net-profit');
   if (el) { el.textContent = formatMoney(net); el.style.color = color; }
-  setText('ov-np-revenue',     formatMoney(lastWhopRevenue));
-  setText('ov-np-adspend',     '- ' + formatMoney(lastMetaSpend));
-  setText('ov-np-commissions', '- ' + formatMoney(commissions));
-  setText('ov-net-profit-sub', `Revenue ${formatMoney(lastWhopRevenue)} · Ad spend ${formatMoney(lastMetaSpend)} · Commissions ${formatMoney(commissions)}`);
+  setText('ov-np-revenue',      formatMoney(lastWhopRevenue));
+  setText('ov-np-adspend',      '- ' + formatMoney(lastMetaSpend));
+  setText('ov-np-commissions',  '- ' + formatMoney(commissions));
+  setText('ov-np-merchant',     '- ' + formatMoney(merchantFees));
+  const adNote = lastMetaSpend === 0 ? ' (Meta loading...)' : '';
+  setText('ov-net-profit-sub', `Revenue ${formatMoney(lastWhopRevenue)} · Ad spend ${formatMoney(lastMetaSpend)}${adNote} · Commissions ${formatMoney(commissions)} · Merchant fees ${formatMoney(merchantFees)}`);
 }
 
 // ── FETCH GHL ──
