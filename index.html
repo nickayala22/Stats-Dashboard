@@ -251,6 +251,33 @@ header {
 .funnel-bar.green-bar { background: linear-gradient(90deg, var(--green-dim) 0%, var(--green) 100%); }
 .funnel-drop { font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; }
 
+.dow-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 12px;
+  text-align: center;
+  background: var(--surface);
+  transition: background 0.15s;
+}
+.dow-card.today {
+  border: 2px solid var(--gold);
+  background: var(--gold-dim);
+}
+.dow-card-label {
+  font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-muted);
+  margin-bottom: 8px; font-weight: 500;
+}
+.dow-card.today .dow-card-label { color: var(--gold); }
+.dow-card-value {
+  font-family: 'Fraunces', serif;
+  font-size: 20px; font-weight: 300;
+  color: var(--text); line-height: 1;
+  margin-bottom: 6px; letter-spacing: -0.5px;
+}
+.dow-card.today .dow-card-value { color: var(--gold); }
+.dow-card-sub { font-size: 9px; color: var(--text-muted); }
+
 .data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
 .data-table th {
   text-align: left; font-size: 9px; text-transform: uppercase;
@@ -866,6 +893,14 @@ header {
       </div>
     </div>
 
+    <!-- Avg Revenue by Day of Week -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Average Revenue by Day of Week <span>Based on data in selected date range · Today highlighted</span> <span class="source-badge source-live">Whop Live</span></div>
+      <div id="dow-grid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-top:4px;">
+        <div style="color:var(--text-muted);font-size:11px;">Loading...</div>
+      </div>
+    </div>
+
     <div class="grid-2">
       <div class="card">
         <div class="card-title">Daily Sales (Last 30 Days) <span class="source-badge source-live">Whop Live</span></div>
@@ -1131,6 +1166,9 @@ function renderWebinarData(d) {
 function renderWhopData() {
   if (!whopData) return;
   const { revenue, refunds, disputes, members, dailySales, recentPayments } = whopData;
+
+  // Day of week averages
+  renderDOW(dailySales);
 
   // KPIs
   setText('wh-total-rev',   formatMoney(revenue.total));
@@ -1989,6 +2027,36 @@ function renderUpcomingTable(upcoming) {
 
   renderRows(todayAppts,    'todayApptTable',    'todayApptCount',    'todayApptSub',    'No appointments today');
   renderRows(tomorrowAppts, 'tomorrowApptTable', 'tomorrowApptCount', 'tomorrowApptSub', 'No appointments tomorrow');
+}
+
+function renderDOW(dailySales) {
+  const grid = document.getElementById('dow-grid');
+  if (!grid || !dailySales) return;
+
+  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const todayDow  = new Date().getDay();
+
+  // Bucket revenue and count by day of week
+  const buckets = Array.from({ length: 7 }, () => ({ total: 0, count: 0 }));
+  Object.entries(dailySales).forEach(([dateStr, val]) => {
+    const rev = typeof val === 'object' ? val.revenue : 0;
+    if (!rev) return;
+    const dow = new Date(dateStr + 'T12:00:00').getDay(); // noon to avoid TZ issues
+    buckets[dow].total += rev;
+    buckets[dow].count += 1;
+  });
+
+  grid.innerHTML = DAY_NAMES.map((name, i) => {
+    const { total, count } = buckets[i];
+    const avg    = count > 0 ? total / count : 0;
+    const isToday = i === todayDow;
+    const todayStar = isToday ? ' ★' : '';
+    return `<div class="dow-card${isToday ? ' today' : ''}">
+      <div class="dow-card-label">${name}${todayStar}</div>
+      <div class="dow-card-value">${avg > 0 ? formatMoney(avg) : '—'}</div>
+      <div class="dow-card-sub">${count > 0 ? count + (count === 1 ? ' day' : ' days') : 'No data'}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── INIT ──
