@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#ffffff">
 <title>Capital Unlocked — Command Center</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
+  color-scheme: light only;
   --bg: #ffffff;
   --surface: #f8f9fb;
   --surface2: #f0f2f5;
@@ -334,6 +337,20 @@ header {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light only;
+    --bg: #ffffff;
+    --surface: #f8f9fb;
+    --surface2: #f0f2f5;
+    --text: #0d1520;
+    --text-muted: #7a8799;
+    --text-mid: #4a5568;
+    --border: rgba(0,0,0,0.08);
+  }
+  body { background: #ffffff !important; color: #0d1520 !important; }
+}
+
 @media (max-width: 900px) {
   .grid-2, .grid-3, .grid-3-1, .grid-1-2 { grid-template-columns: 1fr; }
   .kpi-grid { grid-template-columns: 1fr 1fr !important; }
@@ -472,6 +489,31 @@ header {
         <div class="kpi-label">Sales Yesterday <span class="source-badge source-live">Whop</span></div>
         <div class="kpi-value gold" id="ov-sales-yesterday">—</div>
         <div class="kpi-delta delta-neutral" id="ov-sales-yesterday-sub">Prior day</div>
+      </div>
+    </div>
+
+    <!-- Net Profit -->
+    <div class="card" style="margin-bottom:16px; border-left:3px solid var(--gold); background:var(--gold-dim);">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:24px;">
+        <div>
+          <div class="kpi-label" style="margin-bottom:10px;">Net Profit <span class="source-badge source-live">Whop + Meta</span></div>
+          <div style="font-family:'Fraunces',serif; font-size:48px; font-weight:300; color:var(--gold); line-height:1; letter-spacing:-2px;" id="ov-net-profit">—</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:8px;" id="ov-net-profit-sub">Loading...</div>
+        </div>
+        <div style="display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;">
+          <div>
+            <div class="kpi-label">Revenue</div>
+            <div style="font-family:'Fraunces',serif; font-size:22px; font-weight:300; color:var(--text);" id="ov-np-revenue">—</div>
+          </div>
+          <div>
+            <div class="kpi-label">Ad Spend</div>
+            <div style="font-family:'Fraunces',serif; font-size:22px; font-weight:300; color:var(--red);" id="ov-np-adspend">—</div>
+          </div>
+          <div>
+            <div class="kpi-label">Commissions (10%)</div>
+            <div style="font-family:'Fraunces',serif; font-size:22px; font-weight:300; color:var(--red);" id="ov-np-commissions">—</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -891,8 +933,22 @@ const WORKER_URL = 'https://restless-wildflower-1f9falign-proxy.nick-0f0.workers
 // ── STATE ──
 let ghlData  = null;
 let whopData = null;
-let lastMetaSpend = 0;
+let lastMetaSpend  = 0;
+let lastWhopRevenue = 0;
 let charts   = {};
+
+function updateNetProfit() {
+  if (lastWhopRevenue === 0 && lastMetaSpend === 0) return;
+  const commissions = lastWhopRevenue * 0.10;
+  const net = lastWhopRevenue - lastMetaSpend - commissions;
+  const color = net >= 0 ? 'var(--gold)' : 'var(--red)';
+  const el = document.getElementById('ov-net-profit');
+  if (el) { el.textContent = formatMoney(net); el.style.color = color; }
+  setText('ov-np-revenue',     formatMoney(lastWhopRevenue));
+  setText('ov-np-adspend',     '- ' + formatMoney(lastMetaSpend));
+  setText('ov-np-commissions', '- ' + formatMoney(commissions));
+  setText('ov-net-profit-sub', `Revenue ${formatMoney(lastWhopRevenue)} · Ad spend ${formatMoney(lastMetaSpend)} · Commissions ${formatMoney(commissions)}`);
+}
 
 // ── FETCH GHL ──
 async function fetchGHL() {
@@ -1083,6 +1139,8 @@ function renderWhopData() {
   const refundRate = revenue.total > 0 ? Math.round((refunds.total / revenue.total) * 100) : 0;
   setText('ov-revenue',     formatMoney(revenue.total));
   setText('ov-revenue-sub', `${totalSales} sales · ${refundRate}% refund rate`);
+  lastWhopRevenue = revenue.total || 0;
+  updateNetProfit();
 
   // Today vs yesterday sales
   const todayKey     = new Date().toISOString().slice(0,10);
@@ -1783,6 +1841,7 @@ function renderMetaData(d) {
   setText('ov-cpl-card-sub', summary.cpl > 0 ? `${summary.leads} leads · ${formatMoney(summary.spend)} spend` : 'Awaiting Meta data');
   lastMetaSpend  = summary.spend || 0;
   lastMetaLeads  = summary.leads || 0;
+  updateNetProfit();
   updateCPBC();
   updateLeadToBooked();
 
