@@ -1002,7 +1002,7 @@ async function fetchGHL() {
     if (activeRange.startTime) params.set('startTime', activeRange.startTime);
     if (activeRange.endTime)   params.set('endTime',   activeRange.endTime);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 7000);
+    const timeout = setTimeout(() => controller.abort(), 45000);
     const res = await fetch(`${WORKER_URL}/ghl/summary?${params.toString()}`, { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1014,8 +1014,10 @@ async function fetchGHL() {
     hideError();
   } catch (err) {
     setStatus('error');
-    document.getElementById('last-refresh').textContent = 'GHL failed — ' + err.message;
-    document.getElementById('data-status').textContent = 'GHL error · check worker';
+    const ghlMsg = err.name === 'AbortError' ? 'GHL timed out (>45s)' : 'GHL failed — ' + err.message;
+    document.getElementById('last-refresh').textContent = ghlMsg;
+    console.error('GHL fetch error:', err);
+    document.getElementById('data-status').textContent = ghlMsg;
     renderMockData();
   }
 }
