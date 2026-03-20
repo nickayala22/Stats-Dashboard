@@ -1343,6 +1343,7 @@ function renderWhopData() {
 const CLOSER_NAMES = {
   'VWvue5YByZHIKFYo5YEh': 'Michael M.',
   'OYLVyczHMHC9fGEZPmqs': 'Phillip H.',
+  'zK9tsS8zwKj1d0iGuyQe': 'Steve M.',
 };
 
 // ── RENDER LIVE GHL DATA ──
@@ -2033,11 +2034,18 @@ function renderMetaData(d) {
 function renderUpcomingTable(upcoming) {
   const statusColor = { confirmed: 'var(--gold)', showed: 'var(--green)', noshow: 'var(--red)' };
 
-  const todayStr    = new Date().toISOString().slice(0,10);
-  const tomorrowStr = new Date(Date.now() + 86400000).toISOString().slice(0,10);
+  function localDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function apptDateStr(startTime) {
+    return localDateStr(new Date(startTime));
+  }
+  const now = new Date();
+  const todayStr    = localDateStr(now);
+  const tomorrowStr = localDateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
 
-  const todayAppts    = (upcoming || []).filter(a => new Date(a.startTime).toISOString().slice(0,10) === todayStr);
-  const tomorrowAppts = (upcoming || []).filter(a => new Date(a.startTime).toISOString().slice(0,10) === tomorrowStr);
+  const todayAppts    = (upcoming || []).filter(a => apptDateStr(a.startTime) === todayStr);
+  const tomorrowAppts = (upcoming || []).filter(a => apptDateStr(a.startTime) === tomorrowStr);
 
   function renderRows(appts, tbodyId, countId, subId, emptyMsg) {
     const tbody = document.getElementById(tbodyId);
