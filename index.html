@@ -1381,7 +1381,7 @@ function renderGHLData() {
 
   // Rev per closed deal
   const revPerDeal = deals.won > 0 && wonValue > 0 ? Math.round(wonValue / deals.won) : 0;
-  setText('ov-rev-per-deal', revPerDeal > 0 ? `avg ${formatMoney(revPerDeal)} / deal` : 'No closed deals yet');
+  setText('ov-rev-per-deal', revPerDeal > 0 ? `avg ${formatMoney(revPerDeal)} / deal` : deals.won > 0 ? `${deals.won} deals — add values in GHL` : 'No closed deals yet');
 
   // Pipeline KPIs
   const rangeLabel = (() => {
