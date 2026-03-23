@@ -411,7 +411,13 @@ header {
   .date-custom { display: none; }
   .commissions-btn { font-size: 10px !important; padding: 6px 10px !important; }
 }
+@media (max-width: 900px) {
+  .levers-grid { grid-template-columns: 1fr !important; }
+  .levers-grid > div:first-child { position:static !important; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .levers-grid > div:first-child .kpi { margin:0; }
+}
 @media (max-width: 500px) {
+  .levers-grid > div:first-child { grid-template-columns: 1fr !important; }
   .kpi-grid { grid-template-columns: 1fr !important; }
   .wrap { padding: 0 16px 60px; }
 }
@@ -1011,7 +1017,7 @@ header {
       <div style="font-size:13px; color:var(--text-muted);">Adjust the levers to model revenue scenarios. Pre-populated from your live data.</div>
     </div>
 
-    <div style="display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start;">
+    <div style="display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start;" class="levers-grid">
 
       <!-- Left: sticky output cards -->
       <div style="position:sticky; top:20px;">
