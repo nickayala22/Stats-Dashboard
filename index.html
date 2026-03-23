@@ -1005,7 +1005,7 @@ header {
   </div>
 
   <!-- ═══ REVENUE LEVERS ═══ -->
-  <div class="panel" id="panel-levers" style="display:none;">
+  <div class="panel" id="panel-levers">
 
     <div style="margin-bottom:24px;">
       <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">Adjust the levers below to model revenue scenarios. Pre-populated from your live data.</div>
@@ -1974,11 +1974,10 @@ let lastMetaData = null;
 
 function switchTab(el, panel) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>{ p.classList.remove('active'); p.style.display='none'; });
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   const panelEl = document.getElementById('panel-'+panel);
   panelEl.classList.add('active');
-  panelEl.style.display='block';
   setTimeout(() => {
     Object.values(charts).forEach(c => c?.resize?.());
     if (panel === 'ads' && lastMetaData) renderMetaData(lastMetaData);
