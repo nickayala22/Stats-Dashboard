@@ -1357,9 +1357,21 @@ function renderWebinarData(d) {
 
 function renderWhopData() {
   if (!whopData) return;
-  const { revenue, refunds, disputes, members, dailySales, recentPayments } = whopData;
+  const { revenue, refunds, disputes, members, recentPayments } = whopData;
 
-  // Day of week averages
+  // Merge manual payments into dailySales
+  const dailySales = JSON.parse(JSON.stringify(whopData.dailySales || {}));
+  manualPaymentsData.forEach(mp => {
+    const d   = mp.date;
+    const amt = parseFloat(mp.amount || 0);
+    const fee = parseFloat(mp.fee_pct || 0);
+    const net = amt * (1 - fee / 100);
+    if (!dailySales[d]) dailySales[d] = { count: 0, revenue: 0 };
+    dailySales[d].count++;
+    dailySales[d].revenue += net;
+  });
+
+  // Day of week averages — use merged dailySales including manual payments
   renderDOW(dailySales);
 
   // KPIs
@@ -2443,6 +2455,8 @@ function renderManualPayments() {
     </tr>`;
   }).join('');
   updateCombinedRevenue();
+  // Re-render whop data to merge manual payments into daily charts and today's count
+  if (whopData) renderWhopData();
 }
 
 function editManualPayment(id) {
