@@ -620,6 +620,60 @@ header {
 
   <!-- ═══ GHL PIPELINE ═══ -->
   <div class="panel" id="panel-pipeline">
+
+    <!-- Log a Close -->
+    <div class="card" style="margin-bottom:20px; border:1px solid var(--gold); background:var(--gold-dim);">
+      <div class="card-title">Log a Close <span style="font-size:10px; color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0;">Tracked independently from GHL</span></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr auto; gap:10px; align-items:end; margin-bottom:12px;">
+        <div>
+          <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;">Contact Name</div>
+          <input id="cl-name" type="text" placeholder="John Smith" style="width:100%; background:#fff; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 10px; font-size:13px; font-family:inherit;">
+        </div>
+        <div>
+          <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;">Tier</div>
+          <select id="cl-tier" style="width:100%; background:#fff; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 10px; font-size:13px; font-family:inherit;">
+            <option>Tier 1</option>
+            <option>Tier 2</option>
+            <option>Tier 3</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;">Amount</div>
+          <input id="cl-amount" type="number" placeholder="8000" style="width:100%; background:#fff; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 10px; font-size:13px; font-family:inherit;">
+        </div>
+        <div>
+          <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;">Closer</div>
+          <select id="cl-closer" style="width:100%; background:#fff; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 10px; font-size:13px; font-family:inherit;">
+            <option>Michael M.</option>
+            <option>Phillip H.</option>
+            <option>Steve M.</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.05em;">Date</div>
+          <input id="cl-date" type="date" style="width:100%; background:#fff; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 10px; font-size:13px; font-family:inherit;">
+        </div>
+        <button id="cl-submit-btn" onclick="logClose()" style="background:var(--gold); color:#fff; border:none; border-radius:4px; padding:7px 18px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">+ LOG</button>
+      </div>
+      <div id="cl-status" style="font-size:11px; color:var(--text-muted); min-height:16px;"></div>
+
+      <!-- Closes table -->
+      <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+        <table class="data-table">
+          <thead>
+            <tr><th>Date</th><th>Contact</th><th>Tier</th><th>Amount</th><th>Closer</th><th></th></tr>
+          </thead>
+          <tbody id="closesTable">
+            <tr><td colspan="6" style="color:var(--text-muted);padding:12px 0;">Loading...</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11px; color:var(--text-muted);">Total closes logged</span>
+          <span id="cl-total-rev" style="font-size:15px; font-weight:600; color:var(--gold);">—</span>
+        </div>
+      </div>
+    </div>
     <div class="kpi-grid" style="grid-template-columns: repeat(5, 1fr);">
       <div class="kpi">
         <div class="kpi-label">Calls Booked <span class="source-badge source-live">Live</span></div>
@@ -2059,6 +2113,7 @@ function loadAllData() {
   fetchWebinar();
   fetchMeta();
   fetchManualPayments();
+  fetchCloses();
 }
 
 async function fetchMeta() {
@@ -2396,6 +2451,85 @@ function resetLevers() {
   initLevers();
 }
 
+// ── CLOSES TRACKER ──
+let closesData = [];
+
+async function fetchCloses() {
+  try {
+    const res  = await fetch(`${WORKER_URL}/closes`);
+    const data = await res.json();
+    closesData = Array.isArray(data) ? data : [];
+    renderCloses();
+  } catch(e) { console.error('closes fetch failed', e); }
+}
+
+function renderCloses() {
+  const tbody = document.getElementById('closesTable');
+  if (!tbody) return;
+
+  // Update overview/pipeline KPIs
+  const won = closesData.length;
+  const wonVal = closesData.reduce((s, c) => s + parseFloat(c.amount || 0), 0);
+  setText('ov-won', won);
+  setText('pl-won', won);
+  setText('ov-won-delta', `${won} deals logged`);
+  setText('pl-won-val', formatMoney(wonVal) + ' closed');
+  setText('cl-total-rev', formatMoney(wonVal));
+  // Update funnel if ghlData available
+  if (ghlData) renderGHLData();
+
+  if (!closesData.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--text-muted);padding:12px 0;">No closes logged yet</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = closesData.map(c => `
+    <tr>
+      <td>${c.date || '—'}</td>
+      <td style="font-weight:600;">${c.contact_name || '—'}</td>
+      <td>${c.tier || '—'}</td>
+      <td style="color:var(--gold); font-weight:600;">${formatMoney(c.amount)}</td>
+      <td style="color:var(--text-muted);">${c.closer || '—'}</td>
+      <td><span onclick="deleteClose('${c.id}')" style="cursor:pointer; color:var(--red); font-size:11px;">✕</span></td>
+    </tr>
+  `).join('');
+}
+
+async function logClose() {
+  const name   = document.getElementById('cl-name').value;
+  const tier   = document.getElementById('cl-tier').value;
+  const amount = document.getElementById('cl-amount').value;
+  const closer = document.getElementById('cl-closer').value;
+  const date   = document.getElementById('cl-date').value;
+  const status = document.getElementById('cl-status');
+
+  if (!name || !amount || !date) { status.textContent = 'Name, amount and date required.'; status.style.color = 'var(--red)'; return; }
+
+  status.textContent = 'Saving...'; status.style.color = 'var(--text-muted)';
+  try {
+    const res = await fetch(`${WORKER_URL}/closes`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ contact_name: name, tier, amount, closer, date }),
+    });
+    if (!res.ok) throw new Error('Save failed');
+    status.textContent = 'Close logged.'; status.style.color = 'var(--green)';
+    document.getElementById('cl-name').value   = '';
+    document.getElementById('cl-amount').value = '';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+    fetchCloses();
+  } catch(e) {
+    status.textContent = 'Error — check worker'; status.style.color = 'var(--red)';
+  }
+}
+
+async function deleteClose(id) {
+  if (!confirm('Remove this close?')) return;
+  try {
+    await fetch(`${WORKER_URL}/closes/${id}`, { method: 'DELETE' });
+    fetchCloses();
+  } catch(e) { alert('Delete failed'); }
+}
+
 // ── MANUAL PAYMENTS ──
 let manualPaymentsData = [];
 let manualRevenueTotal = 0;
@@ -2454,9 +2588,9 @@ function renderManualPayments() {
       </td>
     </tr>`;
   }).join('');
-  updateCombinedRevenue();
-  // Re-render whop data to merge manual payments into daily charts and today's count
+  // Re-render whop charts with merged data first, then update combined revenue display
   if (whopData) renderWhopData();
+  updateCombinedRevenue();
 }
 
 function editManualPayment(id) {
@@ -2562,11 +2696,14 @@ activeRange = { startTime: new Date(Date.now() - 30 * 86400000).getTime(), endTi
 // Pre-fill date field with today
 const mpDateEl = document.getElementById('mp-date');
 if (mpDateEl) mpDateEl.value = new Date().toISOString().slice(0,10);
+const clDateEl = document.getElementById('cl-date');
+if (clDateEl) clDateEl.value = new Date().toISOString().slice(0,10);
 fetchGHL();
 setTimeout(fetchWhop,           800);
 setTimeout(fetchWebinar,        1600);
 setTimeout(fetchMeta,           2400);
 setTimeout(fetchManualPayments, 3000);
+setTimeout(fetchCloses,         3200);
 
 // Auto-refresh every 15 min
 setInterval(loadAllData, 15 * 60 * 1000);
