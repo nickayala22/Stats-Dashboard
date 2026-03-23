@@ -1584,19 +1584,22 @@ function renderGHLData() {
   // Overview KPIs
   setText('ov-booked', appointments.booked || 0);
   setText('ov-showrate', showRate + '%');
-  setText('ov-won', deals.won || 0);
+  // Won count now owned by closes tracker — don't overwrite
+  // setText('ov-won', deals.won || 0);
   setText('ov-pipeline', formatMoney(pipelineValue));
   setText('ov-pipeline-card', formatMoney(pipelineValue));
   setText('ov-open-count', `${deals.open} open deals`);
   setText('ov-booked-delta', `${appointments.noShow} no-shows`);
   setText('ov-showrate-delta', `${completedCalls} completed calls`);
-  setText('ov-won-delta', `${deals.lost} lost`);
+  setText('ov-won-delta', closesData.length > 0 ? `${closesData.length} deals logged` : `${deals.lost} lost`);
   updateCPBC(appointments.booked || 0);
   updateLeadToBooked();
 
   // Rev per closed deal
-  const revPerDeal = deals.won > 0 && wonValue > 0 ? Math.round(wonValue / deals.won) : 0;
-  setText('ov-rev-per-deal', revPerDeal > 0 ? `avg ${formatMoney(revPerDeal)} / deal` : deals.won > 0 ? `${deals.won} deals — add values in GHL` : 'No closed deals yet');
+  const closedWon = closesData.length || deals.won || 0;
+  const closedVal = closesData.reduce((s,c) => s + parseFloat(c.amount||0), 0) || wonValue;
+  const revPerDeal = closedWon > 0 && closedVal > 0 ? Math.round(closedVal / closedWon) : 0;
+  setText('ov-rev-per-deal', revPerDeal > 0 ? `avg ${formatMoney(revPerDeal)} / deal` : closedWon > 0 ? `${closedWon} deals logged` : 'No closed deals yet');
 
   // Pipeline KPIs
   const rangeLabel = (() => {
@@ -1625,7 +1628,7 @@ function renderGHLData() {
   setText('rv-deals-lost', deals.lost || 0);
 
   // Funnel
-  renderFunnel(appointments, deals, completedCalls, showRate);
+  renderFunnel(appointments, { ...deals, won: closedWon }, completedCalls, showRate);
 
   // Pipeline stages — real breakdown
   renderStages(stageCounts, deals);
