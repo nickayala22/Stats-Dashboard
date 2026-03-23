@@ -2494,8 +2494,22 @@ function updateCombinedRevenue() {
   const combined = (lastWhopRevenue || 0) + (manualRevenueTotal || 0);
   setText('wh-total-rev', formatMoney(combined));
   setText('ov-revenue',   formatMoney(combined));
-  lastWhopRevenue = combined;
-  updateNetProfit();
+  // Don't overwrite lastWhopRevenue — use a separate display-only combined value
+  // so repeated calls don't compound the manual total
+  const displayRevenue = combined;
+  // Update net profit using combined
+  const commissions  = displayRevenue * 0.10;
+  const merchantFees = displayRevenue * 0.03;
+  const net = displayRevenue - lastMetaSpend - commissions - merchantFees;
+  const color = net >= 0 ? 'var(--gold)' : 'var(--red)';
+  const el = document.getElementById('ov-net-profit');
+  if (el) { el.textContent = formatMoney(net); el.style.color = color; }
+  setText('ov-np-revenue', formatMoney(displayRevenue));
+  setText('ov-np-adspend', formatMoney(lastMetaSpend));
+  setText('ov-np-commissions', formatMoney(commissions));
+  setText('ov-np-merchant', formatMoney(merchantFees));
+  const sub = document.getElementById('ov-net-profit-sub');
+  if (sub) sub.textContent = `Revenue ${formatMoney(displayRevenue)} · Ad spend ${formatMoney(lastMetaSpend)} · Commissions ${formatMoney(commissions)} · Merchant fees ${formatMoney(merchantFees)}`;
 }
 
 async function addManualPayment() {
