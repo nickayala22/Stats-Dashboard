@@ -454,6 +454,7 @@ header {
     <button class="tab" onclick="switchTab(this,'pipeline')">GHL Pipeline <span class="source-badge source-live" style="margin-left:6px">Live</span></button>
     <button class="tab" onclick="switchTab(this,'webinar')">Webinars <span class="source-badge source-live" style="margin-left:6px">Live</span></button>
     <button class="tab" onclick="switchTab(this,'ads')">Meta Ads <span class="source-badge source-live" style="margin-left:6px">Live</span></button>
+    <button class="tab" onclick="switchTab(this,'levers')">⚙ Revenue Levers</button>
   </div>
 
   <div id="errorBanner" class="error-banner"></div>
@@ -1003,9 +1004,144 @@ header {
     </div>
   </div>
 
-</div>
+  <!-- ═══ REVENUE LEVERS ═══ -->
+  <div class="panel" id="panel-levers" style="display:none;">
 
-<script>
+    <div style="margin-bottom:24px;">
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">Adjust the levers below to model revenue scenarios. Pre-populated from your live data.</div>
+    </div>
+
+    <!-- Output cards -->
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:32px;">
+      <div class="kpi" style="border:2px solid var(--gold); background:var(--gold-dim);">
+        <div class="kpi-label">Projected Monthly Revenue</div>
+        <div class="kpi-value gold" id="lv-projected-rev">—</div>
+        <div class="kpi-delta delta-neutral" id="lv-rev-delta">vs current: —</div>
+      </div>
+      <div class="kpi" style="border:2px solid var(--border);">
+        <div class="kpi-label">Projected Net Profit</div>
+        <div class="kpi-value" id="lv-projected-profit">—</div>
+        <div class="kpi-delta" id="lv-profit-delta">after ad spend + commissions + fees</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Projected Deals / Month</div>
+        <div class="kpi-value" id="lv-projected-deals">—</div>
+        <div class="kpi-delta delta-neutral" id="lv-deals-delta">vs current: —</div>
+      </div>
+    </div>
+
+    <!-- Levers -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- Close Rate -->
+      <div class="card" style="padding:20px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Close Rate</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of showed calls that close</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-cr-current" style="color:var(--text);">—</span></div>
+            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-cr-display">—</div>
+          </div>
+        </div>
+        <input type="range" id="lv-cr" min="1" max="50" step="0.5" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>1%</span><span>50%</span></div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-cr-note"></div>
+      </div>
+
+      <!-- Avg Sale Value -->
+      <div class="card" style="padding:20px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Avg Sale Value</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Blended from Whop data</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-asv-current" style="color:var(--text);">—</span></div>
+            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-asv-display">—</div>
+          </div>
+        </div>
+        <input type="range" id="lv-asv" min="500" max="25000" step="100" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>$500</span><span>$25,000</span></div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-asv-note"></div>
+      </div>
+
+      <!-- Show Rate -->
+      <div class="card" style="padding:20px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Show Rate</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of booked calls that show</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-sr-current" style="color:var(--text);">—</span></div>
+            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-sr-display">—</div>
+          </div>
+        </div>
+        <input type="range" id="lv-sr" min="10" max="95" step="1" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>10%</span><span>95%</span></div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-sr-note"></div>
+      </div>
+
+      <!-- Lead to Booked -->
+      <div class="card" style="padding:20px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Lead → Booked Rate</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of leads that book a call</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-lb-current" style="color:var(--text);">—</span></div>
+            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-lb-display">—</div>
+          </div>
+        </div>
+        <input type="range" id="lv-lb" min="1" max="30" step="0.5" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>1%</span><span>30%</span></div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-lb-note"></div>
+      </div>
+
+      <!-- Monthly Lead Volume -->
+      <div class="card" style="padding:20px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Monthly Lead Volume</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Total leads per month from ads</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-lv-current" style="color:var(--text);">—</span></div>
+            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-lv-display">—</div>
+          </div>
+        </div>
+        <input type="range" id="lv-lv" min="100" max="10000" step="50" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>100</span><span>10,000</span></div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-lv-note"></div>
+      </div>
+
+      <!-- Ad Spend / CPL -->
+      <div class="card" style="padding:20px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Cost Per Lead</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Drives ad spend in profit calc</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-cpl-current" style="color:var(--text);">—</span></div>
+            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-cpl-display">—</div>
+          </div>
+        </div>
+        <input type="range" id="lv-cpl" min="5" max="150" step="1" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>$5</span><span>$150</span></div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-cpl-note"></div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:20px; text-align:right;">
+      <button onclick="resetLevers()" style="background:var(--surface2); border:1px solid var(--border); color:var(--text-muted); border-radius:4px; padding:6px 16px; font-size:11px; cursor:pointer; font-family:inherit;">↺ Reset to live data</button>
+    </div>
+
+  </div>
 // ── CONFIG ──
 // Replace with your deployed Cloudflare Worker URL
 const WORKER_URL = 'https://restless-wildflower-1f9falign-proxy.nick-0f0.workers.dev';
@@ -1838,12 +1974,15 @@ let lastMetaData = null;
 
 function switchTab(el, panel) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>{ p.classList.remove('active'); p.style.display='none'; });
   el.classList.add('active');
-  document.getElementById('panel-'+panel).classList.add('active');
+  const panelEl = document.getElementById('panel-'+panel);
+  panelEl.classList.add('active');
+  panelEl.style.display='block';
   setTimeout(() => {
     Object.values(charts).forEach(c => c?.resize?.());
     if (panel === 'ads' && lastMetaData) renderMetaData(lastMetaData);
+    if (panel === 'levers') initLevers();
   }, 50);
 }
 
@@ -2119,6 +2258,118 @@ function renderDOW(dailySales) {
       <div class="dow-card-sub">${count > 0 ? count + (count === 1 ? ' day' : ' days') : 'No data'}</div>
     </div>`;
   }).join('');
+}
+
+// ── REVENUE LEVERS ──
+let leversInitialized = false;
+
+function initLevers() {
+  if (leversInitialized) return;
+
+  // Pull live values
+  const currentLeads    = lastMetaLeads || 1636;
+  const currentCPL      = lastMetaLeads > 0 && lastMetaSpend > 0 ? Math.round(lastMetaSpend / lastMetaLeads) : 26;
+  const currentRevenue  = lastWhopRevenue || 40500;
+  const currentBooked   = lastBookedCalls || 127;
+  const currentShowed   = 65; // from ghlData
+  const currentClosed   = (ghlData?.deals?.won) || 2;
+  const currentASV      = currentClosed > 0 ? Math.round(currentRevenue / currentClosed) : Math.round(currentRevenue / 5);
+  const currentShowRate = currentBooked > 0 ? Math.round((currentShowed / currentBooked) * 100) : 70;
+  const currentLB       = currentLeads > 0 ? Math.round((currentBooked / currentLeads) * 100 * 10) / 10 : 8;
+  const currentCR       = currentShowed > 0 ? Math.round((currentClosed / currentShowed) * 100 * 10) / 10 : 7.7;
+
+  // Set slider values
+  document.getElementById('lv-cr').value  = currentCR;
+  document.getElementById('lv-asv').value = currentASV;
+  document.getElementById('lv-sr').value  = currentShowRate;
+  document.getElementById('lv-lb').value  = currentLB;
+  document.getElementById('lv-lv').value  = currentLeads;
+  document.getElementById('lv-cpl').value = currentCPL;
+
+  // Store baseline
+  document.getElementById('lv-cr').dataset.baseline  = currentCR;
+  document.getElementById('lv-asv').dataset.baseline = currentASV;
+  document.getElementById('lv-sr').dataset.baseline  = currentShowRate;
+  document.getElementById('lv-lb').dataset.baseline  = currentLB;
+  document.getElementById('lv-lv').dataset.baseline  = currentLeads;
+  document.getElementById('lv-cpl').dataset.baseline = currentCPL;
+
+  // Set current labels
+  setText('lv-cr-current',  currentCR + '%');
+  setText('lv-asv-current', formatMoney(currentASV));
+  setText('lv-sr-current',  currentShowRate + '%');
+  setText('lv-lb-current',  currentLB + '%');
+  setText('lv-lv-current',  currentLeads.toLocaleString());
+  setText('lv-cpl-current', '$' + currentCPL);
+
+  leversInitialized = true;
+  updateLevers();
+}
+
+function updateLevers() {
+  const cr  = parseFloat(document.getElementById('lv-cr').value);
+  const asv = parseFloat(document.getElementById('lv-asv').value);
+  const sr  = parseFloat(document.getElementById('lv-sr').value);
+  const lb  = parseFloat(document.getElementById('lv-lb').value);
+  const lv  = parseFloat(document.getElementById('lv-lv').value);
+  const cpl = parseFloat(document.getElementById('lv-cpl').value);
+
+  // Update display values
+  setText('lv-cr-display',  cr + '%');
+  setText('lv-asv-display', formatMoney(asv));
+  setText('lv-sr-display',  sr + '%');
+  setText('lv-lb-display',  lb + '%');
+  setText('lv-lv-display',  lv.toLocaleString());
+  setText('lv-cpl-display', '$' + cpl);
+
+  // Calc
+  const bookedCalls  = Math.round(lv * (lb / 100));
+  const showedCalls  = Math.round(bookedCalls * (sr / 100));
+  const closedDeals  = Math.round(showedCalls * (cr / 100));
+  const projRevenue  = closedDeals * asv;
+  const projAdSpend  = lv * cpl;
+  const projComm     = projRevenue * 0.10;
+  const projMerchant = projRevenue * 0.03;
+  const projProfit   = projRevenue - projAdSpend - projComm - projMerchant;
+
+  // Baseline current
+  const baseRevenue = lastWhopRevenue || 40500;
+  const baseDeals   = (ghlData?.deals?.won) || 2;
+
+  const revDelta    = projRevenue - baseRevenue;
+  const dealDelta   = closedDeals - baseDeals;
+
+  setText('lv-projected-rev',    formatMoney(projRevenue));
+  setText('lv-projected-profit', formatMoney(projProfit));
+  setText('lv-projected-deals',  closedDeals);
+
+  const revDeltaEl = document.getElementById('lv-rev-delta');
+  if (revDeltaEl) {
+    revDeltaEl.textContent = (revDelta >= 0 ? '↑ +' : '↓ ') + formatMoney(Math.abs(revDelta)) + ' vs current';
+    revDeltaEl.style.color = revDelta >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  const profitEl = document.getElementById('lv-projected-profit');
+  if (profitEl) profitEl.style.color = projProfit >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const dealDeltaEl = document.getElementById('lv-deals-delta');
+  if (dealDeltaEl) {
+    dealDeltaEl.textContent = (dealDelta >= 0 ? '↑ +' : '↓ ') + Math.abs(dealDelta) + ' vs current';
+    dealDeltaEl.style.color = dealDelta >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  // Notes
+  const crBaseline = parseFloat(document.getElementById('lv-cr').dataset.baseline) || cr;
+  setText('lv-cr-note',  `${showedCalls} showed calls × ${cr}% close rate = ${closedDeals} deals. Each 1% increase adds ~${Math.round(showedCalls * 0.01 * asv / 1000 * 10) / 10}K revenue.`);
+  setText('lv-asv-note', `${closedDeals} deals × ${formatMoney(asv)} avg = ${formatMoney(projRevenue)}. Each $100 increase adds ${formatMoney(closedDeals * 100)}.`);
+  setText('lv-sr-note',  `${bookedCalls} booked calls × ${sr}% show rate = ${showedCalls} showed.`);
+  setText('lv-lb-note',  `${lv.toLocaleString()} leads × ${lb}% booked rate = ${bookedCalls} calls.`);
+  setText('lv-lv-note',  `At $${cpl} CPL that's ${formatMoney(lv * cpl)} in ad spend to generate ${lv.toLocaleString()} leads.`);
+  setText('lv-cpl-note', `${lv.toLocaleString()} leads × $${cpl} = ${formatMoney(projAdSpend)} total ad spend.`);
+}
+
+function resetLevers() {
+  leversInitialized = false;
+  initLevers();
 }
 
 // ── MANUAL PAYMENTS ──
