@@ -1007,138 +1007,134 @@ header {
   <!-- ═══ REVENUE LEVERS ═══ -->
   <div class="panel" id="panel-levers">
 
-    <div style="margin-bottom:24px;">
-      <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">Adjust the levers below to model revenue scenarios. Pre-populated from your live data.</div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:13px; color:var(--text-muted);">Adjust the levers to model revenue scenarios. Pre-populated from your live data.</div>
     </div>
 
-    <!-- Output cards -->
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:32px; position:sticky; top:0; z-index:10; background:var(--bg); padding:12px 0 16px; border-bottom:1px solid var(--border);">
-      <div class="kpi" style="border:2px solid var(--gold); background:var(--gold-dim);">
-        <div class="kpi-label">Projected Monthly Revenue</div>
-        <div class="kpi-value gold" id="lv-projected-rev">—</div>
-        <div class="kpi-delta delta-neutral" id="lv-rev-delta">vs current: —</div>
-      </div>
-      <div class="kpi" style="border:2px solid var(--border);">
-        <div class="kpi-label">Projected Net Profit</div>
-        <div class="kpi-value" id="lv-projected-profit">—</div>
-        <div class="kpi-delta" id="lv-profit-delta">after ad spend + commissions + fees</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Projected Deals / Month</div>
-        <div class="kpi-value" id="lv-projected-deals">—</div>
-        <div class="kpi-delta delta-neutral" id="lv-deals-delta">vs current: —</div>
-      </div>
-    </div>
+    <div style="display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start;">
 
-    <!-- Levers -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
-
-      <!-- Close Rate -->
-      <div class="card" style="padding:20px 24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Close Rate</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of showed calls that close</div>
+      <!-- Left: sticky output cards -->
+      <div style="position:sticky; top:20px;">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div class="kpi" style="border:2px solid var(--gold); background:var(--gold-dim); padding:16px;">
+            <div class="kpi-label">Projected Revenue</div>
+            <div class="kpi-value gold" id="lv-projected-rev">—</div>
+            <div class="kpi-delta" id="lv-rev-delta">vs current: —</div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-cr-current" style="color:var(--text);">—</span></div>
-            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-cr-display">—</div>
+          <div class="kpi" style="border:1px solid var(--border); padding:16px;">
+            <div class="kpi-label">Projected Net Profit</div>
+            <div class="kpi-value" id="lv-projected-profit">—</div>
+            <div class="kpi-delta delta-neutral" id="lv-profit-delta">after spend + comm + fees</div>
           </div>
+          <div class="kpi" style="border:1px solid var(--border); padding:16px;">
+            <div class="kpi-label">Projected Deals / Mo</div>
+            <div class="kpi-value" id="lv-projected-deals">—</div>
+            <div class="kpi-delta delta-neutral" id="lv-deals-delta">vs current: —</div>
+          </div>
+          <button onclick="resetLevers()" style="background:var(--surface2); border:1px solid var(--border); color:var(--text-muted); border-radius:4px; padding:8px; font-size:11px; cursor:pointer; font-family:inherit; width:100%;">↺ Reset to live data</button>
         </div>
-        <input type="range" id="lv-cr" min="1" max="50" step="0.5" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
-        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>1%</span><span>50%</span></div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-cr-note"></div>
       </div>
 
-      <!-- Avg Sale Value -->
-      <div class="card" style="padding:20px 24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Avg Sale Value</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Blended from Whop data</div>
+      <!-- Right: sliders -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <div class="card" style="padding:20px 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Close Rate</div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of showed calls that close</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-cr-current">—</span></div>
+              <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-cr-display">—</div>
+            </div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-asv-current" style="color:var(--text);">—</span></div>
-            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-asv-display">—</div>
-          </div>
+          <input type="range" id="lv-cr" min="1" max="50" step="0.5" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>1%</span><span>50%</span></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-cr-note"></div>
         </div>
-        <input type="range" id="lv-asv" min="500" max="25000" step="100" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
-        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>$500</span><span>$25,000</span></div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-asv-note"></div>
-      </div>
 
-      <!-- Show Rate -->
-      <div class="card" style="padding:20px 24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Show Rate</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of booked calls that show</div>
+        <div class="card" style="padding:20px 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Avg Sale Value</div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Blended from Whop data</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-asv-current">—</span></div>
+              <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-asv-display">—</div>
+            </div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-sr-current" style="color:var(--text);">—</span></div>
-            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-sr-display">—</div>
-          </div>
+          <input type="range" id="lv-asv" min="500" max="25000" step="100" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>$500</span><span>$25,000</span></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-asv-note"></div>
         </div>
-        <input type="range" id="lv-sr" min="10" max="95" step="1" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
-        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>10%</span><span>95%</span></div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-sr-note"></div>
-      </div>
 
-      <!-- Lead to Booked -->
-      <div class="card" style="padding:20px 24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Lead → Booked Rate</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of leads that book a call</div>
+        <div class="card" style="padding:20px 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Show Rate</div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of booked calls that show</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-sr-current">—</span></div>
+              <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-sr-display">—</div>
+            </div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-lb-current" style="color:var(--text);">—</span></div>
-            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-lb-display">—</div>
-          </div>
+          <input type="range" id="lv-sr" min="10" max="95" step="1" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>10%</span><span>95%</span></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-sr-note"></div>
         </div>
-        <input type="range" id="lv-lb" min="1" max="30" step="0.5" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
-        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>1%</span><span>30%</span></div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-lb-note"></div>
-      </div>
 
-      <!-- Monthly Lead Volume -->
-      <div class="card" style="padding:20px 24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Monthly Lead Volume</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Total leads per month from ads</div>
+        <div class="card" style="padding:20px 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Lead → Booked Rate</div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">% of leads that book a call</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-lb-current">—</span></div>
+              <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-lb-display">—</div>
+            </div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-lv-current" style="color:var(--text);">—</span></div>
-            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-lv-display">—</div>
-          </div>
+          <input type="range" id="lv-lb" min="1" max="30" step="0.5" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>1%</span><span>30%</span></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-lb-note"></div>
         </div>
-        <input type="range" id="lv-lv" min="100" max="10000" step="50" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
-        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>100</span><span>10,000</span></div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-lv-note"></div>
-      </div>
 
-      <!-- Ad Spend / CPL -->
-      <div class="card" style="padding:20px 24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Cost Per Lead</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Drives ad spend in profit calc</div>
+        <div class="card" style="padding:20px 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Monthly Lead Volume</div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Total leads per month from ads</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-lv-current">—</span></div>
+              <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-lv-display">—</div>
+            </div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-cpl-current" style="color:var(--text);">—</span></div>
-            <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-cpl-display">—</div>
-          </div>
+          <input type="range" id="lv-lv" min="100" max="10000" step="50" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>100</span><span>10,000</span></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-lv-note"></div>
         </div>
-        <input type="range" id="lv-cpl" min="5" max="150" step="1" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
-        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>$5</span><span>$150</span></div>
-        <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-cpl-note"></div>
+
+        <div class="card" style="padding:20px 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:var(--text); font-family:'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase;">Cost Per Lead</div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Drives ad spend in profit calc</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text-muted);">Current: <span id="lv-cpl-current">—</span></div>
+              <div style="font-size:22px; font-weight:700; color:var(--gold); font-family:'Fraunces',serif;" id="lv-cpl-display">—</div>
+            </div>
+          </div>
+          <input type="range" id="lv-cpl" min="5" max="150" step="1" style="width:100%; accent-color:var(--gold);" oninput="updateLevers()">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:4px;"><span>$5</span><span>$150</span></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:10px;" id="lv-cpl-note"></div>
+        </div>
+
       </div>
-
-    </div>
-
-    <div style="margin-top:20px; text-align:right;">
-      <button onclick="resetLevers()" style="background:var(--surface2); border:1px solid var(--border); color:var(--text-muted); border-radius:4px; padding:6px 16px; font-size:11px; cursor:pointer; font-family:inherit;">↺ Reset to live data</button>
     </div>
 
   </div>
