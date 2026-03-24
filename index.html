@@ -2366,7 +2366,8 @@ function initLevers() {
   const currentNoShow   = ghlData?.appointments?.noShow || 28;
   const completedCalls  = currentShowed + currentNoShow;
   const currentClosed   = closesData.length || 2;
-  const currentASV      = currentClosed > 0 ? Math.round(currentRevenue / currentClosed) : Math.round(currentRevenue / 5);
+  const closesRevenue   = closesData.reduce((s,c) => s + parseFloat(c.amount||0), 0);
+  const currentASV      = currentClosed > 0 && closesRevenue > 0 ? Math.round(closesRevenue / currentClosed) : 8000;
   const currentShowRate = completedCalls > 0 ? Math.round((currentShowed / completedCalls) * 100) : 70;
   const currentLB       = currentLeads > 0 ? Math.round((currentBooked / currentLeads) * 100 * 10) / 10 : 8;
   const currentCR       = currentShowed > 0 ? Math.round((currentClosed / currentShowed) * 100 * 10) / 10 : 7.7;
