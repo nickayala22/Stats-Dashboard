@@ -1213,6 +1213,15 @@ header {
 // Replace with your deployed Cloudflare Worker URL
 const WORKER_URL = 'https://restless-wildflower-1f9falign-proxy.nick-0f0.workers.dev';
 
+// Local date helpers — avoids UTC shift issues
+function localDateKey(d) {
+  const dt = d || new Date();
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+function localYesterdayKey() {
+  const d = new Date(); d.setDate(d.getDate() - 1); return localDateKey(d);
+}
+
 // ── STATE ──
 let ghlData  = null;
 let whopData = null;
@@ -1446,8 +1455,8 @@ function renderWhopData() {
   updateNetProfit();
 
   // Today vs yesterday sales
-  const todayKey     = new Date().toISOString().slice(0,10);
-  const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+  const todayKey     = localDateKey();
+  const yesterdayKey = localYesterdayKey();
   const todayData     = dailySales[todayKey]     || { count: 0, revenue: 0 };
   const yesterdayData = dailySales[yesterdayKey] || { count: 0, revenue: 0 };
   const salesDelta    = todayData.count - yesterdayData.count;
@@ -2168,8 +2177,8 @@ function renderMetaData(d) {
 
   // Today vs yesterday leads
   if (daily) {
-    const todayKey     = new Date().toISOString().slice(0,10);
-    const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    const todayKey     = localDateKey();
+    const yesterdayKey = localYesterdayKey();
     const leadsToday     = (daily[todayKey]     || {}).leads || 0;
     const leadsYesterday = (daily[yesterdayKey] || {}).leads || 0;
     const leadsDelta     = leadsToday - leadsYesterday;
@@ -2619,7 +2628,7 @@ function cancelEditManualPayment() {
   document.getElementById('mp-amount').value = '';
   document.getElementById('mp-label').value  = '';
   document.getElementById('mp-fee').value    = '';
-  document.getElementById('mp-date').value   = new Date().toISOString().slice(0,10);
+  document.getElementById('mp-date').value   = localDateKey();
   const btn = document.getElementById('mp-submit-btn');
   if (btn) { btn.textContent = '+ ADD'; btn.style.background = 'var(--gold)'; }
   const cancel = document.getElementById('mp-cancel-btn');
@@ -2698,9 +2707,9 @@ initMockCharts();
 activeRange = { startTime: new Date(Date.now() - 30 * 86400000).getTime(), endTime: Date.now() };
 // Pre-fill date field with today
 const mpDateEl = document.getElementById('mp-date');
-if (mpDateEl) mpDateEl.value = new Date().toISOString().slice(0,10);
+if (mpDateEl) mpDateEl.value = localDateKey();
 const clDateEl = document.getElementById('cl-date');
-if (clDateEl) clDateEl.value = new Date().toISOString().slice(0,10);
+if (clDateEl) clDateEl.value = localDateKey();
 fetchGHL();
 setTimeout(fetchWhop,           800);
 setTimeout(fetchWebinar,        1600);
