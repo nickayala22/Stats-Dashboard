@@ -2072,7 +2072,7 @@ function switchTab(el, panel) {
   setTimeout(() => {
     Object.values(charts).forEach(c => c?.resize?.());
     if (panel === 'ads' && lastMetaData) renderMetaData(lastMetaData);
-    if (panel === 'levers') initLevers();
+    if (panel === 'levers') { leversInitialized = false; initLevers(); }
   }, 50);
 }
 
@@ -2362,10 +2362,12 @@ function initLevers() {
   const currentCPL      = lastMetaLeads > 0 && lastMetaSpend > 0 ? Math.round(lastMetaSpend / lastMetaLeads) : 26;
   const currentRevenue  = lastWhopRevenue || 40500;
   const currentBooked   = lastBookedCalls || 127;
-  const currentShowed   = 65; // from ghlData
-  const currentClosed   = (ghlData?.deals?.won) || 2;
+  const currentShowed   = ghlData?.appointments?.showed || 65;
+  const currentNoShow   = ghlData?.appointments?.noShow || 28;
+  const completedCalls  = currentShowed + currentNoShow;
+  const currentClosed   = closesData.length || 2;
   const currentASV      = currentClosed > 0 ? Math.round(currentRevenue / currentClosed) : Math.round(currentRevenue / 5);
-  const currentShowRate = currentBooked > 0 ? Math.round((currentShowed / currentBooked) * 100) : 70;
+  const currentShowRate = completedCalls > 0 ? Math.round((currentShowed / completedCalls) * 100) : 70;
   const currentLB       = currentLeads > 0 ? Math.round((currentBooked / currentLeads) * 100 * 10) / 10 : 8;
   const currentCR       = currentShowed > 0 ? Math.round((currentClosed / currentShowed) * 100 * 10) / 10 : 7.7;
 
