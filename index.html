@@ -1437,8 +1437,7 @@ function renderWhopData() {
   // Day of week averages — use merged dailySales including manual payments
   renderDOW(dailySales);
 
-  // KPIs
-  setText('wh-total-rev',   formatMoney(revenue.total));
+  // KPIs — wh-total-rev set by updateCombinedRevenue
   setText('wh-total-count', `${(revenue.countByTier['Tier 1']||0) + (revenue.countByTier['Tier 2']||0) + (revenue.countByTier['Tier 3']||0)} total sales`);
   setText('wh-active',      members.active);
   setText('wh-active-sub',  `${members.cancelled} cancelled · ${members.expired} expired`);
@@ -1446,13 +1445,12 @@ function renderWhopData() {
   setText('wh-refund-count',`${refunds.count} refunds`);
   setText('wh-disputes',    disputes.count);
 
-  // Overview bar
+  // Overview bar — don't set directly, let updateCombinedRevenue handle it
   const totalSales = (revenue.countByTier['Tier 1']||0) + (revenue.countByTier['Tier 2']||0) + (revenue.countByTier['Tier 3']||0);
   const refundRate = revenue.total > 0 ? Math.round((refunds.total / revenue.total) * 100) : 0;
-  setText('ov-revenue',     formatMoney(revenue.total));
   setText('ov-revenue-sub', `${totalSales} sales · ${refundRate}% refund rate`);
   lastWhopRevenue = revenue.total || 0;
-  updateNetProfit();
+  updateCombinedRevenue();
 
   // Today vs yesterday sales
   const todayKey     = localDateKey();
